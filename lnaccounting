@@ -23,6 +23,7 @@ prog
   .version(version)
   .command('get', 'Get harmony report')
   .argument('<category>', 'Report category', Object.keys(categories))
+  .help(`Categories: ${Object.keys(categories).join(', ')}`)
   .option('--csv', 'Output a CSV')
   .action((args, options, logger) => {
     const {lnd} = getLnd({});
@@ -45,7 +46,7 @@ prog
               return val.slice(1, -1).slice(0, 32);
             }
 
-            return parseInt(val, 10).toFixed(4);
+            return parseFloat(val, 10).toFixed(4);
           });
         });
 
