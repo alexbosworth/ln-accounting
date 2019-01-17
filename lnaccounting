@@ -40,7 +40,7 @@ prog
           return logger.info(res[csvType]);
         }
 
-        const rows = res[csvType].split('\n').map(n => {
+        const entries = res[csvType].split('\n').map(n => {
           return n.split(',').map(val => {
             if (val[0] === '"') {
               return val.slice(1, -1).slice(0, 32);
@@ -49,6 +49,13 @@ prog
             return parseFloat(val, 10).toFixed(4);
           });
         });
+
+        const [header] = entries;
+
+        const datedRecords = entries.slice([header].length)
+          .sort((a, b) => a[2] > b[2] ? 1 : -1);
+
+        const rows = [].concat([header]).concat(datedRecords);
 
         const records = table(rows, {border: getBorderCharacters('norc')});
 
