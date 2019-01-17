@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "caporal": "1.1.0",
+    "dotenv": "6.2.0",
+    "ln-service": "32.0.5",
+    "table": "5.2.1"
+  },
+  "description": "Lightning Network accounting reports",
+  "license": "MIT",
+  "name": "ln-accounting",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alexbosworth/ln-accounting.git"
+  },
+  "version": "1.0.0"
+}

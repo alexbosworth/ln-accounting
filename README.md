@@ -1,0 +1,11 @@
+# Harmony Accounting
+
+Show LN sends and receives in Harmony format
+
+## Configuration
+
+```ini
+LNACCOUNTING_LND_CERT=BASE_64_CERT_FILE
+LNACCOUNTING_LND_MACAROON=BASE_64_MACAROON_FILE
+LNACCOUNTING_LND_SOCKET=LND_GRPC_IP:LND_GRPC_PORT
+```
