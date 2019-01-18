@@ -26,10 +26,11 @@ prog
   .help(`Categories: ${Object.keys(categories).join(', ')}`)
   .option('--csv', 'Output a CSV')
   .action((args, options, logger) => {
+    const category = categories[args.category];
     const {lnd} = getLnd({});
 
     return new Promise((resolve, reject) => {
-      return getAccountingReport({currency, fiat, lnd}, (err, res) => {
+      return getAccountingReport({category, currency, fiat, lnd}, (err, r) => {
         if (!!err) {
           return reject(err);
         }
@@ -37,10 +38,10 @@ prog
         const csvType = `${categories[args.category]}_csv`;
 
         if (!!options.csv) {
-          return logger.info(res[csvType]);
+          return logger.info(r[csvType]);
         }
 
-        const entries = res[csvType].split('\n').map(n => {
+        const entries = r[csvType].split('\n').map(n => {
           return n.split(',').map(val => {
             if (val[0] === '"') {
               return val.slice(1, -1).slice(0, 32);
