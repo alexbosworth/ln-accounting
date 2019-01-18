@@ -4,12 +4,16 @@ Show LN sends and receives in Harmony format
 
 ## Configuration
 
+Create a .env file alongside `lnaccounting` with the following entries:
+
 ```ini
-GRPC_SSL_CIPHER_SUITES=HIGH+ECDSA
-LNACCOUNTING_LND_CERT=BASE_64_CERT_FILE
-LNACCOUNTING_LND_MACAROON=BASE_64_MACAROON_FILE
-LNACCOUNTING_LND_SOCKET=LND_GRPC_IP:LND_GRPC_PORT
+GRPC_SSL_CIPHER_SUITES="HIGH+ECDSA"
+LNACCOUNTING_LND_CERT="BASE_64_TLS_CERT_FILE"
+LNACCOUNTING_LND_MACAROON="BASE_64_MACAROON_FILE"
+LNACCOUNTING_LND_SOCKET="LND_GRPC_IP:LND_GRPC_PORT"
 ```
+
+Alternatively set the entries as environment variables.
 
 ## Example Usage
 
