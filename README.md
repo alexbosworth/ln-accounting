@@ -1,6 +1,6 @@
 # Harmony Accounting
 
-Show LN sends and receives in Harmony format
+Show LN sends and receives in [Harmony](https://github.com/picksco/harmony) format
 
 ## Configuration
 
