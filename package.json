@@ -5,7 +5,7 @@
   },
   "dependencies": {
     "async": "3.1.0",
-    "asyncjs-util": "1.1.0",
+    "asyncjs-util": "1.1.1",
     "json2csv": "4.5.2",
     "ln-service": "40.4.4",
     "request": "2.88.0"
