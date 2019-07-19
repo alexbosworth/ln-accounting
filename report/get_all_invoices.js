@@ -47,6 +47,7 @@ module.exports = ({lnd}, cbk) => {
 
   // Iterate through invoice pages until all invoices are collected
   return asyncUntil(
+    cbk => cbk(null, next === false),
     cbk => {
       return getInvoices({lnd, token: next}, (err, res) => {
         if (!!err) {
@@ -60,8 +61,7 @@ module.exports = ({lnd}, cbk) => {
         return cbk(null, invoices);
       });
     },
-    cbk => cbk(null, next === false),
-    (err, invoices) => {
+    err => {
       if (!!err) {
         return cbk(err);
       }

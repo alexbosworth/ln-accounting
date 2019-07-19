@@ -185,6 +185,8 @@ module.exports = (args, cbk) => {
           return cbk(null, []);
         }
 
+        const {forwards} = getForwards;
+
         try {
           return cbk(null, forwardsAsRecords({forwards}).records);
         } catch (err) {
