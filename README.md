@@ -1,35 +1,89 @@
 # Harmony Accounting
 
-Show LN sends and receives in Harmony format
+Get LND sends and receives in Harmony format
 
-## Configuration
+## getAccountingReport
 
-Create a .env file alongside `lnaccounting` with the following entries:
+Get an accounting summary of wallet
 
-```ini
-GRPC_SSL_CIPHER_SUITES="HIGH+ECDSA"
-LNACCOUNTING_LND_CERT="BASE_64_TLS_CERT_FILE"
-LNACCOUNTING_LND_MACAROON="BASE_64_MACAROON_FILE"
-LNACCOUNTING_LND_SOCKET="LND_GRPC_IP:LND_GRPC_PORT"
-```
+Note: Chain fees does not include chain fees paid to close channels
 
-Alternatively set the entries as environment variables.
+    {
+      [category]: <Category Filter String>
+      currency: <Base Currency Type String>
+      fiat: <Fiat Currency Type String>
+      lnd: <Authenticated LND gRPC API Object>
+      [rate]: <Exchange Function> ({currency, date, fiat}, cbk) => (err, {cents})
+      rate_provider: <Fiat Rate Provider String> coincap || coindesk
+    }
 
-## Example Usage
+    @returns via cbk or Promise
+    {
+      [chain_fees]: [{
+        [amount]: <Amount Number>
+        [asset]: <Asset Type String>
+        [created_at]: <ISO 8601 Date String>
+        [external_id]: <External Reference Id String>
+        [from_id]: <Source Id String>
+        [id]: <Record Id String>
+        [notes]: <Notes String>
+        [to_id]: <Destination Id String>
+        [type]: <Record Type String>
+      }]
+      [chain_fees_csv]: <CSV String>
+      [chain_sends]: [{
+        [amount]: <Amount Number>
+        [asset]: <Asset Type String>
+        [created_at]: <ISO 8601 Date String>
+        [external_id]: <External Reference Id String>
+        [from_id]: <Source Id String>
+        [id]: <Record Id String>
+        [notes]: <Notes String>
+        [to_id]: <Destination Id String>
+        [type]: <Record Type String>
+      }]
+      [chain_sends_csv]: <CSV String>
+      [forwards]: [{
+        [amount]: <Amount Number>
+        [asset]: <Asset Type String>
+        [created_at]: <ISO 8601 Date String>
+        [external_id]: <External Reference Id String>
+        [from_id]: <Source Id String>
+        [id]: <Record Id String>
+        [notes]: <Notes String>
+        [to_id]: <Destination Id String>
+        [type]: <Record Type String>
+      }]
+      [forwards_csv]: <CSV String>
+      [invoices]: [{
+        [amount]: <Amount Number>
+        [asset]: <Asset Type String>
+        [created_at]: <ISO 8601 Date String>
+        [external_id]: <External Reference Id String>
+        [from_id]: <Source Id String>
+        [id]: <Record Id String>
+        [notes]: <Notes String>
+        [to_id]: <Destination Id String>
+        [type]: <Record Type String>
+      }]
+      [invoices_csv]: <CSV String>
+      [payments]: [{
+        [amount]: <Amount Number>
+        [asset]: <Asset Type String>
+        [created_at]: <ISO 8601 Date String>
+        [external_id]: <External Reference Id String>
+        [from_id]: <Source Id String>
+        [id]: <Record Id String>
+        [notes]: <Notes String>
+        [to_id]: <Destination Id String>
+        [type]: <Record Type String>
+      }]
+      [payments_csv]: <CSV String>
+    }
 
-Get forwarding records:
+## rateProviders
 
-```
-./lnaccounting get forwards
-┌────────────┬───────┬──────────────────────────┬─────────────┬───────────────┬────────────┬───────┬─────────────────────────┬────────────────┬────────┐
-│ Amount     │ Asset │ Date & Time              │ Fiat Amount │ From ID       │ Network ID │ Notes │ To ID                   │ Transaction ID │ Type   │
-├────────────┼───────┼──────────────────────────┼─────────────┼───────────────┼────────────┼───────┼─────────────────────────┼────────────────┼────────┤
-│ 1.0000     │ BTC   │ 2019-01-09T02:54:25.000Z │ 0.0000      │ 1x2x3         │            │       │ 2x3x4                   │                │ income │
-└────────────┴───────┴──────────────────────────┴─────────────┴───────────────┴────────────┴───────┴─────────────────────────┴────────────────┴────────┘
-```
+Rate provider source options
 
-See all options:
+    [<Rate Provider Name String>]
 
-```
-./lnaccounting --help
-```

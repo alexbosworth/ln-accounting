@@ -1,0 +1,29 @@
+{
+  "categories": {
+    "chain_fees": "chain_fees",
+    "chain_receives": "chain_receives",
+    "chain_sends": "chain_sends",
+    "invoices": "invoices",
+    "payments": "payments",
+    "forwards": "forwards"
+  },
+  "fields": [
+    "Amount",
+    "Asset",
+    "Date & Time",
+    "Fiat Amount",
+    "From ID",
+    "Network ID",
+    "Notes",
+    "To ID",
+    "Transaction ID",
+    "Type"
+  ],
+  "types": {
+    "deposit": "transfer:deposit",
+    "income": "income",
+    "network_fee": "fee:network",
+    "spend": "spend",
+    "withdraw": "transfer:withdraw"
+  }
+}

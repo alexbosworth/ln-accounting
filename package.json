@@ -1,16 +1,27 @@
 {
-  "dependencies": {
-    "caporal": "1.1.0",
-    "dotenv": "6.2.0",
-    "ln-service": "33.0.2",
-    "table": "5.2.1"
+  "author": "Alex Bosworth",
+  "bugs": {
+    "url": "https://github.com/alexbosworth/ln-accounting/issues"
   },
-  "description": "Lightning Network accounting reports",
+  "dependencies": {
+    "async": "3.1.0",
+    "asyncjs-util": "1.1.0",
+    "json2csv": "4.5.2",
+    "ln-service": "40.4.4",
+    "request": "2.88.0"
+  },
+  "description": "lnd accounting reports",
+  "devDependencies": {
+    "tap": "14.4.2"
+  },
   "license": "MIT",
   "name": "ln-accounting",
   "repository": {
     "type": "git",
     "url": "https://github.com/alexbosworth/ln-accounting.git"
   },
-  "version": "2.0.3"
+  "scripts": {
+    "test": "tap test/fiat/*.js test/harmony/*.js"
+  },
+  "version": "3.0.0"
 }
