@@ -28,13 +28,22 @@ const tests = [
       }],
     },
   },
+  {
+    args: {},
+    description: 'Array of forwards required',
+    error: 'ExpectedArrayOfForwardsToFormatAsAccountingRecords',
+  },
 ];
 
-tests.forEach(({args, description, expected}) => {
-  return test(description, ({deepIs, end, equal}) => {
-    const {records} = forwardsAsRecords(args);
+tests.forEach(({args, description, error, expected}) => {
+  return test(description, ({deepIs, end, throws}) => {
+    if (!!error) {
+      throws(() => forwardsAsRecords(args), new Error(error), 'Got error');
+    } else {
+      const {records} = forwardsAsRecords(args);
 
-    deepIs(records, expected.records, 'Forwards formatted as records');
+      deepIs(records, expected.records, 'Forwards formatted as records');
+    }
 
     return end();
   });

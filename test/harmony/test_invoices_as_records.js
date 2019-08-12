@@ -28,13 +28,22 @@ const tests = [
       }],
     },
   },
+  {
+    args: {},
+    description: 'Expects array of invoices',
+    error: 'ExpectedArrayOfInvoicesToMapToAccountingRecords',
+  }
 ];
 
-tests.forEach(({args, description, expected}) => {
-  return test(description, ({deepIs, end, equal}) => {
-    const {records} = invoicesAsRecords(args);
+tests.forEach(({args, description, error, expected}) => {
+  return test(description, ({deepIs, end, throws}) => {
+    if (!!error) {
+      throws(() => invoicesAsRecords(args), new Error(error), 'Got error');
+    } else {
+      const {records} = invoicesAsRecords(args);
 
-    deepIs(records, expected.records, 'Forwards formatted as records');
+      deepIs(records, expected.records, 'Forwards formatted as records');
+    }
 
     return end();
   });
