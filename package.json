@@ -7,7 +7,7 @@
     "async": "3.1.0",
     "asyncjs-util": "1.1.2",
     "json2csv": "4.5.2",
-    "ln-service": "41.1.4",
+    "ln-service": "44.0.1",
     "request": "2.88.0"
   },
   "description": "lnd accounting reports",
