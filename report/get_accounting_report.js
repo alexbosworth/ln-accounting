@@ -30,6 +30,8 @@ const largeLimit = 1e8;
   Note: Chain fees does not include chain fees paid to close channels
 
   {
+    [after]: <Records Created After ISO 8601 Date>
+    [before]: <Records Created Before ISO 8601 Date>
     [category]: <Category Filter String>
     currency: <Base Currency Type String>
     fiat: <Fiat Currency Type String>
@@ -128,16 +130,28 @@ module.exports = (args, cbk) => {
 
       // Get transactions on the blockchain
       getChainTx: ['validate', ({}, cbk) => {
+        if (args.category === categories.forwards) {
+          return cbk(null, {transactions: []});
+        }
+
         return getChainTransactions({lnd: args.lnd}, cbk);
       }],
 
       // Get channels
       getChannels: ['validate', ({}, cbk) => {
+        if (args.category === categories.forwards) {
+          return cbk(null, {channels: []});
+        }
+
         return getChannels({lnd: args.lnd}, cbk);
       }],
 
       // Get closed channels
       getClosedChans: ['validate', ({}, cbk) => {
+        if (args.category === categories.forwards) {
+          return cbk(null, {channels: []});
+        }
+
         return getClosedChannels({lnd: args.lnd}, cbk)
       }],
 
@@ -176,6 +190,10 @@ module.exports = (args, cbk) => {
 
       // Get pending channels
       getPending: ['validate', ({}, cbk) => {
+        if (args.category === categories.forwards) {
+          return cbk(null, {pending_channels: []});
+        }
+
         return getPendingChannels({lnd: args.lnd}, cbk);
       }],
 
@@ -312,7 +330,19 @@ module.exports = (args, cbk) => {
           .concat(invoices || [])
           .concat(payments || []);
 
-        return cbk(null, records);
+        const temporalRecords = records.filter(record => {
+          if (!!args.after && record.created_at < args.after) {
+            return false;
+          }
+
+          if (!!args.before && record.created_at > args.before) {
+            return false;
+          }
+
+          return true;
+        });
+
+        return cbk(null, temporalRecords);
       }],
 
       // Fiat values for records

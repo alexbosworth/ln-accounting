@@ -10,6 +10,8 @@ Get an accounting summary of wallet
 Note: Chain fees does not include chain fees paid to close channels
 
     {
+      [after]: <Records Created After ISO 8601 Date>
+      [before]: <Records Created Before ISO 8601 Date>
       [category]: <Category Filter String>
       currency: <Base Currency Type String>
       fiat: <Fiat Currency Type String>
