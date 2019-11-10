@@ -94,3 +94,6 @@ Rate provider source options
 
     [<Rate Provider Name String>]
 
+Constants:
+
+    [<Rate Provider Name String>]
