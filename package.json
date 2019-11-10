@@ -6,13 +6,13 @@
   "dependencies": {
     "async": "3.1.0",
     "asyncjs-util": "1.1.2",
-    "json2csv": "4.5.3",
-    "ln-service": "46.3.1",
+    "json2csv": "4.5.4",
+    "ln-service": "47.0.0",
     "request": "2.88.0"
   },
   "description": "lnd accounting reports",
   "devDependencies": {
-    "tap": "14.6.9"
+    "tap": "14.9.2"
   },
   "license": "MIT",
   "name": "ln-accounting",
@@ -23,5 +23,5 @@
   "scripts": {
     "test": "tap test/fiat/*.js test/harmony/*.js"
   },
-  "version": "3.1.0"
+  "version": "3.1.1"
 }

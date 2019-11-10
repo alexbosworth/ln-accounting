@@ -1,7 +1,9 @@
-# Harmony Accounting
+# LND Harmony Accounting
 
 Show LN sends and receives in [Harmony](https://github.com/picksco/harmony)
 format
+
+[![npm version](https://badge.fury.io/js/ln-accounting.svg)](https://badge.fury.io/js/ln-accounting)
 
 ## getAccountingReport
 
