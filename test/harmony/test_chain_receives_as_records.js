@@ -39,13 +39,32 @@ const tests = [
       }],
     },
   },
+  {
+    args: null,
+    description: 'Arguments expected',
+    error: 'ExpectedArgumentsToMapReceiveRecords',
+  },
+  {
+    args: {},
+    description: 'Channel transaction ids array expected',
+    error: 'ExpectedChannelTransactionIdsArrayToMapReceiveRecords',
+  },
+  {
+    args: {channel_transaction_ids: []},
+    description: 'Transaction info array expected',
+    error: 'ExpectedTransactionsArrayToMapToReceiveRecords',
+  },
 ];
 
-tests.forEach(({args, description, expected}) => {
-  return test(description, ({deepIs, end, equal}) => {
-    const {records} = chainReceivesAsRecords(args);
+tests.forEach(({args, description, error, expected}) => {
+  return test(description, ({deepIs, end, equal, throws}) => {
+    if (!!error) {
+      throws(() => chainReceivesAsRecords(args), new Error(error), 'Got err');
+    } else {
+      const {records} = chainReceivesAsRecords(args);
 
-    deepIs(records, expected.records, 'Fees formatted as records');
+      deepIs(records, expected.records, 'Fees formatted as records');
+    }
 
     return end();
   });

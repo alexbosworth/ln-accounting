@@ -29,12 +29,12 @@ module.exports = args => {
     .filter(tx => !!tx.is_confirmed && !!tx.tokens && !!tx.is_outgoing)
     .filter(({id}) => !args.channel_transaction_ids.find(n => n === id))
     .map(tx => ({
-      amount: (tx.tokens - tx.fee) * (tx.is_outgoing ? -1 : 1),
+      amount: -(tx.tokens - tx.fee),
       category: categories.chain_sends,
       created_at: tx.created_at,
       id: tx.id,
       notes: `Outputs to ${tx.output_addresses.join(' ')}`,
-      type: !!tx.is_outgoing ? types.withdraw : types.deposit,
+      type: types.withdraw,
     }));
 
   return {records};

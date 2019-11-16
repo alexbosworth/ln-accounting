@@ -74,6 +74,41 @@ const tests = [
       ],
     },
   },
+  {
+    args: {
+      payments: [{
+        created_at: date,
+        destination: 'destination',
+        fee: 1,
+        id: 'id',
+        request: 'request',
+        secret: 'secret',
+        tokens: 2,
+      }],
+    },
+    description: 'Payments as records when the request is weird',
+    expected: {
+      records: [
+        {
+          amount: -2,
+          category: 'payments',
+          created_at: date,
+          id: 'id',
+          notes: 'secret',
+          to_id: 'destination',
+          type: 'spend',
+        },
+        {
+          amount: -1,
+          category: 'payments',
+          created_at: date,
+          id: 'id:fee',
+          notes: 'Routing fee',
+          type: 'fee:network',
+        },
+      ],
+    },
+  },
 ];
 
 tests.forEach(({args, description, expected}) => {

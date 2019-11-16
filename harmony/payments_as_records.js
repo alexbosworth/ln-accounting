@@ -37,7 +37,14 @@ module.exports = ({payments}) => {
   const payRecords = payments.map(payment => {
     const {request} = payment;
 
-    const parsed = !request ? null : parsePaymentRequest({request});
+    let parsed;
+
+    try {
+      parsed = !request ? null : parsePaymentRequest({request});
+    } catch (err) {
+      // Ignore payment requests that cannot be parsed
+      parsed = null;
+    }
 
     return {
       amount: -payment.tokens,

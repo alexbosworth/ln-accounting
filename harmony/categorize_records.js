@@ -1,6 +1,7 @@
 const {categories} = require('./harmony');
 const harmonize = require('./harmonize');
 
+const {isArray} = Array;
 const {keys} = Object;
 
 /** Categorize records
@@ -40,22 +41,22 @@ const {keys} = Object;
   }
 */
 module.exports = ({records}) => {
+  if (!isArray(records)) {
+    throw new Error('ExpectedRecordsArrayToCategorize');
+  }
+
   records.sort((a, b) => a.created_at < b.created_at ? -1 : 1);
 
   const report = {};
 
-  try {
-    keys(categories).forEach(category => {
-      const categoryRecords = records.filter(n => n.category === category);
+  keys(categories).forEach(category => {
+    const categoryRecords = records.filter(n => n.category === category);
 
-      report[category] = categoryRecords;
-      report[`${category}_csv`] = harmonize({records: categoryRecords}).csv;
+    report[category] = categoryRecords;
+    report[`${category}_csv`] = harmonize({records: categoryRecords}).csv;
 
-      return;
-    });
-  } catch (err) {
-    throw new Error('FailedToCategorizeRecords');
-  }
+    return;
+  });
 
   return report;
 };
