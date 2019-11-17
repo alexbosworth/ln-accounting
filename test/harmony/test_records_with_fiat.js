@@ -62,6 +62,33 @@ const tests = [
     },
   },
   {
+    args: {
+      currency: 'BTC',
+      fiat: [],
+      records: [{
+        category: 'category',
+        created_at: date,
+        type: 'type',
+      }],
+    },
+    description: 'No fiat is known',
+    expected: {
+      records: [{
+        amount: 0,
+        asset: 'BTC',
+        category: 'category',
+        created_at: date,
+        external_id: '',
+        fiat_amount: null,
+        from_id: '',
+        id: '',
+        notes: '',
+        to_id: '',
+        type: 'type',
+      }],
+    },
+  },
+  {
     args: {},
     description: 'Records are required',
     error: 'ExpectedArrayOfRecordsToMapToFiatRecords',

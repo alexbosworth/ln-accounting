@@ -12,6 +12,46 @@ const api = ({qs}, cbk) => {
 
 const tests = [
   {
+    args: {},
+    description: 'A currency is required',
+    error: [400, 'UnsupportedCurrencyForCoindeskFiatRateLookup'],
+  },
+  {
+    args: {currency: 'BTC'},
+    description: 'A date is required',
+    error: [400, 'ExpectedDateForCoindeskRateLookup'],
+  },
+  {
+    args: {currency: 'BTC', date: new Date().toISOString()},
+    description: 'A currency type is required',
+    error: [400, 'UnsupportedFiatTypeForCoindeskFiatRateLookup'],
+  },
+  {
+    args: {currency: 'BTC', date: new Date().toISOString(), fiat: 'USD'},
+    description: 'A request method is required',
+    error: [400, 'ExpectedRequestMethodForCoindeskFiatRateLookup'],
+  },
+  {
+    args: {
+      date: new Date().toISOString(),
+      currency: 'BTC',
+      fiat: 'USD',
+      request: ({}, cbk) => cbk('err'),
+    },
+    description: 'Errors returned from coindesk request',
+    error: [503, 'UnexpectedErrorGettingHistoricRate', {err: 'err'}],
+  },
+  {
+    args: {
+      date: new Date().toISOString(),
+      currency: 'BTC',
+      fiat: 'USD',
+      request: ({}, cbk) => cbk(),
+    },
+    description: 'A body is expected in coindesk response',
+    error: [503, 'UnexpectedResponseInHistoricRateResponse'],
+  },
+  {
     args: {
       date: new Date().toISOString(),
       currency: 'BTC',
@@ -23,11 +63,15 @@ const tests = [
   },
 ];
 
-tests.forEach(({args, description, expected}) => {
-  return test(description, async ({end, equal}) => {
-    const {cents} = await getCoindeskHistoricRate(args);
+tests.forEach(({args, description, error, expected}) => {
+  return test(description, async ({end, equal, rejects}) => {
+    if (!!error) {
+      rejects(getCoindeskHistoricRate(args), error, 'Got expected error');
+    } else {
+      const {cents} = await getCoindeskHistoricRate(args);
 
-    equal(cents, expected.cents, 'Cents returned');
+      equal(cents, expected.cents, 'Cents returned');
+    }
 
     return end();
   });

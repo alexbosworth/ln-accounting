@@ -14,9 +14,40 @@ const api = ({qs}, cbk) => {
 
 const tests = [
   {
+    args: {},
+    description: 'A currency code is required',
+    error: [400, 'ExpectedCurrencyToGetHistoricRate'],
+  },
+  {
+    args: {currency: 'BTC'},
+    description: 'A date is required',
+    error: [400, 'ExpectedDateToGetHistoricRate'],
+  },
+  {
+    args: {date, currency: 'BTC'},
+    description: 'A fiat type is required to get historic rate',
+    error: [400, 'ExpectedFiatToGetHistoricRate'],
+  },
+  {
+    args: {date, currency: 'BTC', fiat: 'USD'},
+    description: 'A request function is required to get historic rate',
+    error: [400, 'ExpectedRequestFunctionToGetHistoricRate'],
+  },
+  {
     args: {
+      date,
       currency: 'BTC',
-      date: date,
+      fiat: 'USD',
+      provider: 'provider',
+      request: () => {},
+    },
+    description: 'A request function is required to get historic rate',
+    error: [400, 'ExpectedKnownRateProviderToGetHistoricRate'],
+  },
+  {
+    args: {
+      date,
+      currency: 'BTC',
       fiat: 'USD',
       request: ({qs}, cbk) => api({qs}, cbk),
     },
@@ -25,11 +56,15 @@ const tests = [
   },
 ];
 
-tests.forEach(({args, description, expected}) => {
-  return test(description, async ({end, equal}) => {
-    const {cents} = await getHistoricRate(args);
+tests.forEach(({args, description, error, expected}) => {
+  return test(description, async ({end, equal, rejects}) => {
+    if (!!error) {
+      rejects(getHistoricRate(args), error, 'Gote expected error');
+    } else {
+      const {cents} = await getHistoricRate(args);
 
-    equal(cents, expected.cents, 'Rate returned');
+      equal(cents, expected.cents, 'Rate returned');
+    }
 
     return end();
   });
