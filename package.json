@@ -1,5 +1,8 @@
 {
-  "author": "Alex Bosworth",
+  "author": {
+    "name": "Alex Bosworth",
+    "url": "https://twitter.com/alexbosworth"
+  },
   "bugs": {
     "url": "https://github.com/alexbosworth/ln-accounting/issues"
   },
@@ -7,12 +10,12 @@
     "async": "3.1.0",
     "asyncjs-util": "1.1.2",
     "json2csv": "4.5.4",
-    "ln-service": "47.3.0",
+    "ln-service": "47.4.0",
     "request": "2.88.0"
   },
   "description": "lnd accounting reports",
   "devDependencies": {
-    "tap": "14.9.2"
+    "tap": "14.10.1"
   },
   "license": "MIT",
   "name": "ln-accounting",
@@ -23,5 +26,5 @@
   "scripts": {
     "test": "tap test/fiat/*.js test/harmony/*.js"
   },
-  "version": "3.1.5"
+  "version": "3.1.6"
 }

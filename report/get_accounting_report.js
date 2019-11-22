@@ -1,4 +1,5 @@
 const asyncAuto = require('async/auto');
+const asyncRetry = require('async/retry');
 const {getChainTransactions} = require('ln-service');
 const {getChannels} = require('ln-service');
 const {getClosedChannels} = require('ln-service');
@@ -23,7 +24,9 @@ const {recordsWithFiat} = require('./../harmony');
 const {types} = require('./../harmony');
 
 const earlyStartDate = '2017-08-24T08:57:37.000Z';
+const interval = retryCount => Math.random() * 5000 * Math.pow(2, retryCount);
 const largeLimit = 1e8;
+const times = 10;
 
 /** Get an accounting summary of wallet
 
@@ -194,7 +197,10 @@ module.exports = (args, cbk) => {
           return cbk(null, {pending_channels: []});
         }
 
-        return getPendingChannels({lnd: args.lnd}, cbk);
+        return asyncRetry({interval, times}, cbk => {
+          return getPendingChannels({lnd: args.lnd}, cbk);
+        },
+        cbk);
       }],
 
       // Forward records
