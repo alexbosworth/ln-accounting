@@ -1,4 +1,5 @@
 const {categories} = require('./harmony');
+const notesForChainTransaction = require('./notes_for_chain_transaction');
 const {types} = require('./harmony');
 
 const {isArray} = Array;
@@ -14,6 +15,7 @@ const {isArray} = Array;
       is_outgoing: <Transaction Is Outgoing Bool>
       output_addresses: [<Output Address String>]
       tokens: <Transaction Tokens Number>
+      [transaction]: <Raw Transaction Hex String>
     }]
   }
 
@@ -53,7 +55,7 @@ module.exports = args => {
       category: categories.chain_receives,
       created_at: tx.created_at,
       id: tx.id,
-      notes: `Outputs to ${tx.output_addresses.join(' ')}`,
+      notes: notesForChainTransaction(tx).notes,
       type: types.deposit,
     }));
 
