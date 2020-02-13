@@ -6,7 +6,6 @@ const {getClosedChannels} = require('ln-service');
 const {getForwards} = require('ln-service');
 const {getPayments} = require('ln-service');
 const {getPendingChannels} = require('ln-service');
-const request = require('request');
 const {returnResult} = require('asyncjs-util');
 
 const {categories} = require('./../harmony');
@@ -41,6 +40,7 @@ const times = 10;
     lnd: <LND gRPC Object>
     [rate]: <Exchange Function> ({currency, date, fiat}, cbk) => (err, {cents})
     [rate_provider]: <Fiat Rate Provider String> // coincap || coindesk
+    request: <Request Function>
   }
 
   @returns via cbk or Promise
@@ -126,6 +126,10 @@ module.exports = (args, cbk) => {
 
         if (!!args.rate && typeof args.rate !== 'function') {
           return cbk([400, 'ExpectedRateFunctionForAccountingReport']);
+        }
+
+        if (!args.request) {
+          return cbk([400, 'ExpectedRequestFunctionToGetAccountingReport']);
         }
 
         return cbk();
@@ -354,12 +358,12 @@ module.exports = (args, cbk) => {
       // Fiat values for records
       getFiatValues: ['records', ({records}, cbk) => {
         return getFiatValues({
-          request,
           currency: args.currency,
           dates: records.map(n => n.created_at),
           fiat: args.fiat,
           provider: args.rate_provider,
           rate: args.rate,
+          request: args.request,
         },
         cbk);
       }],

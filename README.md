@@ -22,6 +22,7 @@ Note: Chain fees does not include chain fees paid to close channels
       lnd: <Authenticated LND gRPC API Object>
       [rate]: <Exchange Function> ({currency, date, fiat}, cbk) => (err, {cents})
       rate_provider: <Fiat Rate Provider String> coincap || coindesk
+      request: <Request Function>
     }
 
     @returns via cbk or Promise
