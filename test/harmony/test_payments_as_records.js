@@ -109,6 +109,42 @@ const tests = [
       ],
     },
   },
+  {
+    args: {
+      payments: [{
+        created_at: date,
+        destination: 'destination',
+        fee: 1,
+        id: 'id',
+        request: 'request',
+        secret: 'secret',
+        tokens: 2,
+      }],
+      public_key: 'destination'
+    },
+    description: 'Circular payments are represented',
+    expected: {
+      records: [
+        {
+          amount: -2,
+          category: 'payments',
+          created_at: date,
+          id: 'id',
+          notes: '[To Self] secret',
+          to_id: 'destination',
+          type: 'spend',
+        },
+        {
+          amount: -1,
+          category: 'payments',
+          created_at: date,
+          id: 'id:fee',
+          notes: 'Circular payment routing fee',
+          type: 'fee:network',
+        },
+      ],
+    },
+  },
 ];
 
 tests.forEach(({args, description, expected}) => {

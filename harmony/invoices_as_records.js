@@ -1,6 +1,7 @@
 const {categories} = require('./harmony');
 const {types} = require('./harmony');
 
+const hasKeySend = messages => !!messages.find(n => n.type === '5482373484');
 const {isArray} = Array;
 
 /** Invoices as accounting records
@@ -39,14 +40,26 @@ module.exports = ({invoices}) => {
   // Only consider invoices where funds were received
   const records = invoices
     .filter(n => !!n.confirmed_at && !!n.is_confirmed && !!n.received)
-    .map(invoice => ({
-      amount: invoice.received,
-      category: categories.invoices,
-      created_at: invoice.confirmed_at,
-      id: invoice.id,
-      notes: `Invoice: ${invoice.description.replace(/,/gim, ' ')}`,
-      type: types.income,
-    }));
+    .map(invoice => {
+      const description = invoice.description.replace(/,/gim, ' ');
+
+      const {payments} = invoice;
+
+      const [payment] = payments;
+
+      const isKeySend = !payment ? false : !!hasKeySend(payment.messages);
+
+      const pushTag = !isKeySend ? '' : '[Push Payment]';
+
+      return {
+        amount: invoice.received,
+        category: categories.invoices,
+        created_at: invoice.confirmed_at,
+        id: invoice.id,
+        notes: `${pushTag} ${description || String()}`.trim(),
+        type: types.income,
+      };
+    });
 
   return {records};
 };

@@ -6,6 +6,7 @@ const {getClosedChannels} = require('ln-service');
 const {getForwards} = require('ln-service');
 const {getPayments} = require('ln-service');
 const {getPendingChannels} = require('ln-service');
+const {getWalletInfo} = require('ln-service');
 const {returnResult} = require('asyncjs-util');
 
 const {categories} = require('./../harmony');
@@ -207,6 +208,11 @@ module.exports = (args, cbk) => {
         cbk);
       }],
 
+      // Get public key
+      getPublicKey: ['validate', ({}, cbk) => {
+        return getWalletInfo({lnd: args.lnd}, cbk);
+      }],
+
       // Forward records
       forwards: ['getForwards', ({getForwards}, cbk) => {
         if (!getForwards) {
@@ -238,14 +244,17 @@ module.exports = (args, cbk) => {
       }],
 
       // Payment records
-      payments: ['getPayments', ({getPayments}, cbk) => {
+      payments: ['getPayments', ({getPayments, getPublicKey}, cbk) => {
         if (!getPayments) {
           return cbk(null, []);
         }
 
-        const {payments} = getPayments;
+        const {records} = paymentsAsRecords({
+          payments: getPayments.payments,
+          public_key: getPublicKey.public_key,
+        });
 
-        return cbk(null, paymentsAsRecords({payments}).records);
+        return cbk(null, records);
       }],
 
       // Chain fees

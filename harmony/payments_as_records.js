@@ -3,7 +3,7 @@ const {parsePaymentRequest} = require('ln-service');
 const {categories} = require('./harmony');
 const {types} = require('./harmony');
 
-/** Payment as harmony records
+/** Payment as Harmony records
 
   {
     payments: [{
@@ -15,6 +15,7 @@ const {types} = require('./harmony');
       secret: <Payment Preimage Hex String>
       tokens: <Paid Tokens Number>
     }]
+    public_key: <Node Public Key Hex String>
   }
 
   @throws <Error>
@@ -32,9 +33,10 @@ const {types} = require('./harmony');
     }]
   }
 */
-module.exports = ({payments}) => {
+module.exports = args => {
   // Only look at payments where funds were sent
-  const payRecords = payments.map(payment => {
+  const payRecords = args.payments.map(payment => {
+    const isToSelf = payment.destination === args.public_key;
     const {request} = payment;
 
     let parsed;
@@ -46,27 +48,34 @@ module.exports = ({payments}) => {
       parsed = null;
     }
 
+    const notes = !!parsed ? parsed.description : payment.secret;
+    const selfTag = !!isToSelf ? '[To Self]' : String();
+
     return {
       amount: -payment.tokens,
       category: categories.payments,
       created_at: payment.created_at,
       id: payment.id,
-      notes: !parsed ? payment.secret : parsed.description,
+      notes: `${selfTag} ${notes}`.trim(),
       to_id: payment.destination,
       type: types.spend,
     };
   });
 
-  const feeRecords = payments
+  const feeRecords = args.payments
     .filter(({fee}) => !!fee)
-    .map(payment => ({
-      amount: -payment.fee,
-      category: categories.payments,
-      created_at: payment.created_at,
-      id: `${payment.id}:fee`,
-      notes: `Routing fee`,
-      type: types.network_fee,
-    }));
+    .map(payment => {
+      const isToSelf = payment.destination === args.public_key;
+
+      return {
+        amount: -payment.fee,
+        category: categories.payments,
+        created_at: payment.created_at,
+        id: `${payment.id}:fee`,
+        notes: !!isToSelf ? 'Circular payment routing fee' : 'Routing fee',
+        type: types.network_fee,
+      };
+    });
 
   const records = [].concat(payRecords).concat(feeRecords);
 
