@@ -26,5 +26,5 @@
   "scripts": {
     "test": "tap test/fiat/*.js test/harmony/*.js"
   },
-  "version": "4.1.2"
+  "version": "4.1.3"
 }
