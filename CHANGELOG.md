@@ -1,6 +1,6 @@
 # Versions
 
-## Version 4.1.4
+## Version 4.1.5
 
 - `getAccountingReport`: rework invoices and payments to show circular payments
 - `getAccountingReport`: change the formatting of invoice notes to be more terse
