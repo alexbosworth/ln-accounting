@@ -244,7 +244,7 @@ module.exports = (args, cbk) => {
       }],
 
       // Payment records
-      payments: ['getPayments', ({getPayments, getPublicKey}, cbk) => {
+      payments: ['getPayments', 'getPublicKey', ({getPayments, getPublicKey}, cbk) => {
         if (!getPayments) {
           return cbk(null, []);
         }
