@@ -1,5 +1,9 @@
 # Versions
 
+## Version 4.1.6
+
+- `getAccountingReport`: fix async control flow dependency
+
 ## Version 4.1.5
 
 - `getAccountingReport`: rework invoices and payments to show circular payments
