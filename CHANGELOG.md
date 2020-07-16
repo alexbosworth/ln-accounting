@@ -1,6 +1,6 @@
 # Versions
 
-## Version 4.1.6
+## Version 4.1.7
 
 - `getAccountingReport`: fix async control flow dependency
 
