@@ -1,4 +1,4 @@
-const {test} = require('tap');
+const {test} = require('@alexbosworth/tap');
 
 const getHistoricRate = require('./../../fiat/get_historic_rate');
 

@@ -9,14 +9,22 @@
   "dependencies": {
     "async": "3.2.0",
     "asyncjs-util": "1.2.2",
-    "goldengate": "5.7.0",
+    "goldengate": "5.8.0",
     "json2csv": "5.0.1",
-    "ln-service": "49.1.0"
+    "ln-service": "49.3.3"
   },
   "description": "lnd accounting reports",
   "devDependencies": {
-    "tap": "14.10.7"
+    "@alexbosworth/tap": "14.10.9"
   },
+  "engines": {
+    "node": ">=10.4.0"
+  },
+  "keywords": [
+    "accounting",
+    "lightning-network",
+    "lnd"
+  ],
   "license": "MIT",
   "name": "ln-accounting",
   "repository": {
