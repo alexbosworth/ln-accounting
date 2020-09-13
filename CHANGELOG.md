@@ -1,5 +1,9 @@
 # Versions
 
+## Version 4.1.9
+
+- `getAccountingReport`: Fix issue mapping chain receives to records
+
 ## Version 4.1.8
 
 -  `getAccountingReport`: Detect an additional format of submarine swap
