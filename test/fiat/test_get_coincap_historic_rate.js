@@ -1,4 +1,4 @@
-const {test} = require('@alexbosworth/tap');
+const {test} = require('tap');
 
 const getCoincapHistoricRate = require('./../../fiat/get_coincap_historic_rate');
 

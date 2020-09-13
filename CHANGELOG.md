@@ -1,5 +1,10 @@
 # Versions
 
+## Version 4.1.8
+
+-  `getAccountingReport`: Detect an additional format of submarine swap
+-  `getAccountingReport`: Change default rate provider to coincap
+
 ## Version 4.1.7
 
 - `getAccountingReport`: fix async control flow dependency

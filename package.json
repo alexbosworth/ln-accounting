@@ -8,14 +8,14 @@
   },
   "dependencies": {
     "async": "3.2.0",
-    "asyncjs-util": "1.2.2",
-    "goldengate": "5.8.0",
+    "asyncjs-util": "1.2.3",
+    "goldengate": "7.0.0",
     "json2csv": "5.0.1",
-    "ln-service": "49.3.3"
+    "ln-service": "49.9.3"
   },
   "description": "lnd accounting reports",
   "devDependencies": {
-    "@alexbosworth/tap": "14.10.9"
+    "tap": "14.10.8"
   },
   "engines": {
     "node": ">=10.4.0"

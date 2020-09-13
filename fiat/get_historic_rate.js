@@ -5,7 +5,7 @@ const {returnResult} = require('asyncjs-util');
 const getCoincapHistoricRate = require('./get_coincap_historic_rate');
 const getCoindeskHistoricRate = require('./get_coindesk_historic_rate');
 
-const defaultRateProvider = 'coindesk';
+const defaultRateProvider = 'coincap';
 const interval = retryCount => Math.random() * 5000 * Math.pow(2, retryCount);
 const times = 10;
 

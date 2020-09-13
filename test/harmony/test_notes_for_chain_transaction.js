@@ -1,4 +1,4 @@
-const {test} = require('@alexbosworth/tap');
+const {test} = require('tap');
 
 const notesForChainTx = require('./../../harmony/notes_for_chain_transaction');
 
