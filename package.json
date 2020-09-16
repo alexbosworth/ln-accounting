@@ -9,9 +9,9 @@
   "dependencies": {
     "async": "3.2.0",
     "asyncjs-util": "1.2.3",
-    "goldengate": "7.0.1",
+    "goldengate": "7.0.2",
     "json2csv": "5.0.1",
-    "ln-service": "49.9.3"
+    "ln-service": "49.10.0"
   },
   "description": "lnd accounting reports",
   "devDependencies": {
@@ -34,5 +34,5 @@
   "scripts": {
     "test": "tap test/fiat/*.js test/harmony/*.js"
   },
-  "version": "4.1.9"
+  "version": "4.1.10"
 }
