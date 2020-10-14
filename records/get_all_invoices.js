@@ -1,5 +1,7 @@
+const asyncAuto = require('async/auto');
 const asyncUntil = require('async/until');
 const {getInvoices} = require('ln-service');
+const {returnResult} = require('asyncjs-util');
 
 /** Get all invoices
 
@@ -7,7 +9,7 @@ const {getInvoices} = require('ln-service');
     lnd: <Authenticated LND gRPC API Object>
   }
 
-  @returns via cbk
+  @returns via cbk or Promise
   {
     invoices: [{
       chain_address: <Fallback Chain Address String>
@@ -38,35 +40,48 @@ const {getInvoices} = require('ln-service');
   }
 */
 module.exports = ({lnd}, cbk) => {
-  if (!lnd) {
-    return cbk([400, 'ExpectedLndToGetAllInvoices']);
-  }
-
-  const invoices = [];
-  let next;
-
-  // Iterate through invoice pages until all invoices are collected
-  return asyncUntil(
-    cbk => cbk(null, next === false),
-    cbk => {
-      return getInvoices({lnd, token: next}, (err, res) => {
-        if (!!err) {
-          return cbk(err);
+  return new Promise((resolve, reject) => {
+    return asyncAuto({
+      // Check arguments
+      validate: cbk => {
+        if (!lnd) {
+          return cbk([400, 'ExpectedLndToGetAllInvoices']);
         }
 
-        next = res.next || false;
+        return cbk();
+      },
 
-        res.invoices.forEach(invoice => invoices.push(invoice));
+      // Get all the invoices through iterative paging
+      getInvoices: ['validate', ({}, cbk) => {
+        const invoices = [];
+        let token;
 
-        return cbk(null, invoices);
-      });
+        // Iterate through invoice pages until all invoices are collected
+        return asyncUntil(
+          cbk => cbk(null, token === false),
+          cbk => {
+            return getInvoices({lnd, token}, (err, res) => {
+              if (!!err) {
+                return cbk(err);
+              }
+
+              token = res.next || false;
+
+              res.invoices.forEach(invoice => invoices.push(invoice));
+
+              return cbk(null, invoices);
+            });
+          },
+          err => {
+            if (!!err) {
+              return cbk(err);
+            }
+
+            return cbk(null, {invoices});
+          }
+        );
+      }],
     },
-    err => {
-      if (!!err) {
-        return cbk(err);
-      }
-
-      return cbk(null, {invoices});
-    }
-  );
+    returnResult({reject, resolve, of: 'getInvoices'}, cbk));
+  });
 };

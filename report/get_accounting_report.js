@@ -15,7 +15,8 @@ const {chainFeesAsRecords} = require('./../harmony');
 const {chainReceivesAsRecords} = require('./../harmony');
 const {chainSendsAsRecords} = require('./../harmony');
 const {forwardsAsRecords} = require('./../harmony');
-const getAllInvoices = require('./get_all_invoices');
+const {getAllInvoices} = require('./../records');
+const {getAllPayments} = require('./../records');
 const {getFiatValues} = require('./../fiat');
 const {harmonize} = require('./../harmony');
 const {invoicesAsRecords} = require('./../harmony');
@@ -184,6 +185,7 @@ module.exports = (args, cbk) => {
           return cbk();
         }
 
+        // Since there is no way to page by settle date, get all the invoices
         return getAllInvoices({lnd: args.lnd}, cbk);
       }],
 
@@ -193,7 +195,7 @@ module.exports = (args, cbk) => {
           return cbk();
         }
 
-        return getPayments({lnd: args.lnd}, cbk);
+        return getAllPayments({after: args.after, lnd: args.lnd}, cbk);
       }],
 
       // Get pending channels

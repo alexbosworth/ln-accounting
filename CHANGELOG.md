@@ -1,5 +1,9 @@
 # Versions
 
+## Version 4.1.11
+
+- `getAccountingReport`: Add paging support to payments fetching
+
 ## Version 4.1.10
 
 - `getAccountingReport`: Fix issue mapping chain receives to records

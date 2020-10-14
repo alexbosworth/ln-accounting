@@ -9,9 +9,9 @@
   "dependencies": {
     "async": "3.2.0",
     "asyncjs-util": "1.2.3",
-    "goldengate": "7.0.2",
-    "json2csv": "5.0.1",
-    "ln-service": "49.10.0"
+    "goldengate": "7.1.0",
+    "json2csv": "5.0.3",
+    "ln-service": "49.14.1"
   },
   "description": "lnd accounting reports",
   "devDependencies": {
@@ -32,7 +32,7 @@
     "url": "https://github.com/alexbosworth/ln-accounting.git"
   },
   "scripts": {
-    "test": "tap test/fiat/*.js test/harmony/*.js"
+    "test": "tap test/fiat/*.js test/harmony/*.js test/records/*.js"
   },
-  "version": "4.1.10"
+  "version": "4.1.11"
 }
