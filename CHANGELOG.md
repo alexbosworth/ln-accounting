@@ -1,6 +1,6 @@
 # Versions
 
-## Version 4.1.12
+## Version 4.1.13
 
 - `getAccountingReport`: Add paging support to payments fetching
 
