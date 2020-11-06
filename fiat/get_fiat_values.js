@@ -1,11 +1,14 @@
 const asyncAuto = require('async/auto');
 const asyncMapSeries = require('async/mapSeries');
+const asyncRetry = require('async/retry');
 const {returnResult} = require('asyncjs-util');
 
 const getHistoricRate = require('./get_historic_rate');
 
 const dateFormat = 'yyyy-mm-ddThh';
+const defaultRetryCount = 10;
 const {isArray} = Array;
+const interval = retryCount => 10 * Math.pow(2, retryCount);
 
 /** Get fiat values
 
@@ -55,29 +58,34 @@ module.exports = ({currency, dates, fiat, provider, rate, request}, cbk) => {
         const rates = {};
 
         return asyncMapSeries(dates, (date, cbk) => {
-          const roughDate = date.substring(0, dateFormat.length);
+          const roughDate = date.substring(Number(), dateFormat.length);
 
           // Exit early when the fiat value has already been found
           if (!!rates[roughDate]) {
             return cbk(null, {date, cents: rates[roughDate]});
           }
 
-          return (rate || getHistoricRate)({
-            currency,
-            date,
-            fiat,
-            provider,
-            request,
+          const times = !rate ? defaultRetryCount : Number()
+
+          return asyncRetry({interval, times}, cbk => {
+            return (rate || getHistoricRate)({
+              currency,
+              date,
+              fiat,
+              provider,
+              request,
+            },
+            (err, rate) => {
+              if (!!err) {
+                return cbk(err);
+              }
+
+              rates[roughDate] = rate.cents;
+
+              return cbk(null, {date, cents: rate.cents});
+            });
           },
-          (err, rate) => {
-            if (!!err) {
-              return cbk(err);
-            }
-
-            rates[roughDate] = rate.cents;
-
-            return cbk(null, {date, cents: rate.cents});
-          });
+          cbk);
         },
         (err, rates) => {
           if (!!err) {

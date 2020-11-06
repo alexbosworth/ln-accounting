@@ -60,7 +60,7 @@ const tests = [
 tests.forEach(({args, description, error, expected}) => {
   return test(description, async ({deepIs, end, equal, rejects}) => {
     if (!!error) {
-      rejects(getFiatValues(args), error, 'Got expected error');
+      await rejects(getFiatValues(args), error, 'Got expected error');
     } else {
       const {rates} = await getFiatValues(args);
 

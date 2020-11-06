@@ -1,12 +1,11 @@
 const asyncAuto = require('async/auto');
 const asyncRetry = require('async/retry');
-const {getChainTransactions} = require('ln-service');
 const {getChannels} = require('ln-service');
 const {getClosedChannels} = require('ln-service');
 const {getForwards} = require('ln-service');
+const {getIdentity} = require('ln-service');
 const {getPayments} = require('ln-service');
 const {getPendingChannels} = require('ln-service');
-const {getWalletInfo} = require('ln-service');
 const {returnResult} = require('asyncjs-util');
 
 const {categories} = require('./../harmony');
@@ -17,6 +16,7 @@ const {chainSendsAsRecords} = require('./../harmony');
 const {forwardsAsRecords} = require('./../harmony');
 const {getAllInvoices} = require('./../records');
 const {getAllPayments} = require('./../records');
+const {getChainTransactions} = require('./../records');
 const {getFiatValues} = require('./../fiat');
 const {harmonize} = require('./../harmony');
 const {invoicesAsRecords} = require('./../harmony');
@@ -139,11 +139,18 @@ module.exports = (args, cbk) => {
 
       // Get transactions on the blockchain
       getChainTx: ['validate', ({}, cbk) => {
+        // Exit early when accounting for forwards, no need for chain tx info
         if (args.category === categories.forwards) {
           return cbk(null, {transactions: []});
         }
 
-        return getChainTransactions({lnd: args.lnd}, cbk);
+        return getChainTransactions({
+          after: args.after,
+          before: args.before,
+          lnd: args.lnd,
+          request: args.request,
+        },
+        cbk);
       }],
 
       // Get channels
@@ -212,7 +219,7 @@ module.exports = (args, cbk) => {
 
       // Get public key
       getPublicKey: ['validate', ({}, cbk) => {
-        return getWalletInfo({lnd: args.lnd}, cbk);
+        return getIdentity({lnd: args.lnd}, cbk);
       }],
 
       // Forward records
@@ -271,7 +278,9 @@ module.exports = (args, cbk) => {
 
         const {transactions} = getChainTx;
 
-        return cbk(null, chainFeesAsRecords({transactions}).records);
+        const {records} = chainFeesAsRecords({transactions});
+
+        return cbk(null, records);
       }],
 
       // Channel transaction ids

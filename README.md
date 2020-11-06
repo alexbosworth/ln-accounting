@@ -89,6 +89,35 @@ Note: Chain fees does not include chain fees paid to close channels
       [payments_csv]: <CSV String>
     }
 
+## getChainTransactions
+
+Get chain transactions, including sweep fees
+
+    {
+      [after]: <Records Created After ISO 8601 Date>
+      [before]: <Records Created Before ISO 8601 Date>
+      lnd: <Authenticated LND Object>
+      request: <Request Function>
+    }
+
+    @returns via cbk or Promise
+    {
+      transactions: [{
+        [block_id]: <Block Hash String>
+        [confirmation_count]: <Confirmation Count Number>
+        [confirmation_height]: <Confirmation Block Height Number>
+        created_at: <Created ISO 8601 Date String>
+        [description]: <Transaction Label String>
+        [fee]: <Fees Paid Tokens Number>
+        id: <Transaction Id String>
+        is_confirmed: <Is Confirmed Bool>
+        is_outgoing: <Transaction Outbound Bool>
+        output_addresses: [<Address String>]
+        tokens: <Tokens Including Fee Number>
+        [transaction]: <Raw Transaction Hex String>
+      }]
+    }
+
 ## rateProviders
 
 Rate provider source options

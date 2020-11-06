@@ -1,5 +1,10 @@
 # Versions
 
+## Version 4.2.0
+
+- `getAccountingReport`: Populate sweep fees in chain fees report
+- `getChainTransactions`: Add method to derive chain tx with filled-in sweep fees
+
 ## Version 4.1.13
 
 - `getAccountingReport`: Add paging support to payments fetching
