@@ -4,9 +4,11 @@ const asyncRetry = require('async/retry');
 const {getChainTransactions} = require('ln-service');
 const {getSweepTransactions} = require('ln-service');
 const {returnResult} = require('asyncjs-util');
+const {Transaction} = require('bitcoinjs-lib');
 
 const {getBlockstreamVout} = require('./../blockstream');
 
+const {fromHex} = Transaction;
 const interval = retryCount => 100 * Math.pow(2, retryCount);
 const {isArray} = Array;
 const sumOf = arr => arr.reduce((sum, n) => sum + n, Number());
@@ -114,13 +116,17 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
               return cbk(err);
             }
 
+            const {outs} = fromHex(tx.transaction);
+
+            const totalOut = outs.reduce((sum, n) => sum + n.value, Number());
+
             return cbk(null, {
               spends,
               block_id: tx.block_id,
               confirmation_count: tx.confirmation_count,
               confirmation_height: tx.confirmation_height,
               created_at: tx.created_at,
-              fee: tx.fee || (sumOf(spends.map(n => n.tokens)) - tx.tokens),
+              fee: tx.fee || (sumOf(spends.map(n => n.tokens)) - totalOut),
               id: tx.id,
               is_confirmed: tx.is_confirmed,
               is_outgoing: true,
