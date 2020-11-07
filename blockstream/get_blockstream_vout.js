@@ -59,8 +59,6 @@ module.exports = ({id, network, request, vout}, cbk) => {
             return cbk([503, 'ExpectedTxLookupResultForBlockstreamTx']);
           }
 
-console.log("BODY", body)
-
           if (!isArray(body.vout)) {
             return cbk([503, 'ExpectedOutputsArrayForBlockstreamTx']);
           }
