@@ -1,5 +1,10 @@
 # Versions
 
+## Version 4.2.3
+
+- `getAccountingReport`: Populate close channel fees in chain fees report
+- `getChainTransactions`: Include closed channel transactions with paid fees in output
+
 ## Version 4.2.2
 
 - `getAccountingReport`: Populate sweep fees in chain fees report

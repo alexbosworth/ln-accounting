@@ -2,10 +2,12 @@ const asyncAuto = require('async/auto');
 const asyncMapSeries = require('async/mapSeries');
 const asyncRetry = require('async/retry');
 const {getChainTransactions} = require('ln-service');
+const {getClosedChannels} = require('ln-service');
 const {getSweepTransactions} = require('ln-service');
 const {returnResult} = require('asyncjs-util');
 const {Transaction} = require('bitcoinjs-lib');
 
+const {getBlockstreamTx} = require('./../blockstream');
 const {getBlockstreamVout} = require('./../blockstream');
 
 const {fromHex} = Transaction;
@@ -57,6 +59,9 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
 
         return cbk();
       },
+
+      // Get the closed channels
+      getClosed: ['validate', ({}, cbk) => getClosedChannels({lnd}, cbk)],
 
       // Get the sweep transactions
       getSweeps: ['validate', ({}, cbk) => getSweepTransactions({lnd}, cbk)],
@@ -139,15 +144,94 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
         cbk);
       }],
 
+      // Calculate closing fees for channels that were locally initiated
+      getClosingFees: ['getClosed', 'getTx', ({getClosed, getTx}, cbk) => {
+        const channels = getClosed.channels
+          .filter(n => !!n.close_transaction_id)
+          .filter(n => n.is_partner_initiated === false);
+
+        return asyncMapSeries(channels, (channel, cbk) => {
+          const tx = getTx.transactions.find(tx => {
+            return tx.id === channel.close_transaction_id
+          });
+
+          // Exit early when the close transaction is missing
+          if (!tx) {
+            return getBlockstreamTx({
+              network,
+              request,
+              id: channel.close_transaction_id,
+            },
+            (err, res) => {
+              if (!!err) {
+                return cbk(err);
+              }
+
+              return cbk(null, {
+                block_id: res.block_id,
+                confirmation_height: res.confirmation_height,
+                created_at: res.created_at || new Date().toISOString(),
+                fee: res.fee,
+                id: channel.close_transaction_id,
+                is_confirmed: !!res.block_id,
+                is_outgoing: true,
+                output_addresses: res.output_addresses,
+                tokens: res.fee,
+              });
+            });
+          }
+
+          const inputs = fromHex(tx.transaction).ins.map(({hash, index}) => {
+            const id = hash.slice().reverse().toString('hex');
+
+            const matching = getTx.transactions.find(n => n.id === id);
+
+            return {
+              tokens: fromHex(matching.transaction).outs[index].value,
+              transaction_id: id,
+              transaction_vout: index,
+            };
+          });
+
+          const inputsValue = sumOf(inputs.map(n => n.tokens));
+          const outputsValue = fromHex(tx.transaction).outs.map(n => n.value);
+
+          return cbk(null, {
+            block_id: tx.block_id,
+            confirmation_count: tx.confirmation_count,
+            confirmation_height: tx.confirmation_height,
+            created_at: tx.created_at,
+            description: tx.description,
+            fee: inputsValue - sumOf(outputsValue),
+            id: tx.id,
+            is_confirmed: tx.is_confirmed,
+            is_outgoing: true,
+            output_addresses: tx.output_addresses,
+            tokens: tx.tokens,
+            transaction: tx.transaction,
+          });
+        },
+        cbk);
+      }],
+
       // Consolidate transactions, including missing fees
-      transactions: ['getSweepFees', 'getTx', ({getSweepFees, getTx}, cbk) => {
+      transactions: [
+        'getClosingFees',
+        'getSweepFees',
+        'getTx',
+        ({getClosingFees, getSweepFees, getTx}, cbk) =>
+      {
+        const closes = getClosingFees.map(({id}) => id);
         const sweeps = getSweepFees.map(({id}) => id);
 
         const normalTx = getTx.transactions.filter(({id}) => {
-          return !sweeps.includes(id);
+          return !closes.includes(id) && !sweeps.includes(id);
         });
 
-        const transactions = [].concat(getSweepFees).concat(normalTx);
+        const transactions = []
+          .concat(getClosingFees)
+          .concat(getSweepFees)
+          .concat(normalTx);
 
         return cbk(null, {transactions});
       }],
