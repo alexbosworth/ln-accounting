@@ -20,6 +20,7 @@ Note: Chain fees does not include chain fees paid to close channels
       currency: <Base Currency Type String>
       fiat: <Fiat Currency Type String>
       lnd: <Authenticated LND gRPC API Object>
+      [network]: <Network Name String>
       [rate]: <Exchange Function> ({currency, date, fiat}, cbk) => (err, {cents})
       rate_provider: <Fiat Rate Provider String> coincap || coindesk
       request: <Request Function>

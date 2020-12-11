@@ -6,6 +6,7 @@ const {types} = require('./harmony');
   {
     transactions: [{
       created_at: <Transaction Created At ISO 8601 Date String>
+      description: <Chain Transaction Description String>
       fee: <Fee Tokens Number>
       id: <Transaction Id Hex String>
       is_outgoing: <Transaction is Outgoing Bool>
@@ -35,7 +36,7 @@ module.exports = ({transactions}) => {
       category: categories.chain_fees,
       created_at: tx.created_at,
       id: `${tx.id}:fee`,
-      notes: 'On-chain fee',
+      notes: `${tx.description || ''} [Chain Fee]`.trim(),
       type: types.network_fee,
     }));
 

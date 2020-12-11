@@ -21,7 +21,7 @@ const tests = [
         category: 'chain_fees',
         created_at: date,
         id: 'id:fee',
-        notes: 'On-chain fee',
+        notes: '[Chain Fee]',
         type: 'fee:network',
       }],
     },

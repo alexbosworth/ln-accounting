@@ -23,7 +23,12 @@ const tests = [
     args: {output_addresses: ['a', 'b']},
     description: 'Notes are returned',
     expected: {notes: 'Outputs to a b'},
-  }
+  },
+  {
+    args: {description: 'description', output_addresses: ['a', 'b']},
+    description: 'Notes with description are returned',
+    expected: {notes: 'description - Outputs to a b'},
+  },
 ];
 
 tests.forEach(({args, description, expected}) => {

@@ -3,6 +3,7 @@ const {isSweep} = require('goldengate');
 /** Derive notes from a chain transaction
 
   {
+    [description]: <Description Text String>
     output_addresses: [<Output Address String>]
     [transaction]: <Raw Transaction Hex String>
   }
@@ -26,5 +27,9 @@ module.exports = args => {
     return {notes: `Submarine swap failure, swept out to ${addresses}`};
   }
 
-  return {notes: `Outputs to ${addresses}`};
+  if (!args.description) {
+    return {notes: `Outputs to ${addresses}`};
+  }
+
+  return {notes: `${args.description} - Outputs to ${addresses}`};
 };

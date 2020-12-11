@@ -1,5 +1,11 @@
 # Versions
 
+## Version 4.2.4
+
+- `getAccountingReport`: Add `network` argument to support testnet accounting
+- `getAccountingReport`: Add tx chain description notes to chain records
+- `getAccountingReport`: Include "from public key" tag in received push payments
+
 ## Version 4.2.3
 
 - `getAccountingReport`: Populate close channel fees in chain fees report

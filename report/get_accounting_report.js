@@ -40,6 +40,7 @@ const times = 10;
     currency: <Base Currency Type String>
     fiat: <Fiat Currency Type String>
     lnd: <LND gRPC Object>
+    [network]: <Network Name String>
     [rate]: <Exchange Function> ({currency, date, fiat}, cbk) => (err, {cents})
     [rate_provider]: <Fiat Rate Provider String> // coincap || coindesk
     request: <Request Function>
@@ -148,6 +149,7 @@ module.exports = (args, cbk) => {
           after: args.after,
           before: args.before,
           lnd: args.lnd,
+          network: args.network,
           request: args.request,
         },
         cbk);

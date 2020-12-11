@@ -1,6 +1,7 @@
 const {categories} = require('./harmony');
 const {types} = require('./harmony');
 
+const from = messages => messages.find(n => n.type === '34349339');
 const hasKeySend = messages => !!messages.find(n => n.type === '5482373484');
 const {isArray} = Array;
 
@@ -47,8 +48,10 @@ module.exports = ({invoices}) => {
 
       const [payment] = payments;
 
+      const fromKey = !!payment ? from(payment.messages) : null;
       const isKeySend = !payment ? false : !!hasKeySend(payment.messages);
 
+      const fromTag = !!fromKey ? `Marked from ${fromKey.value}` : '';
       const pushTag = !isKeySend ? '' : '[Push Payment]';
 
       return {
@@ -56,7 +59,7 @@ module.exports = ({invoices}) => {
         category: categories.invoices,
         created_at: invoice.confirmed_at,
         id: invoice.id,
-        notes: `${pushTag} ${description || String()}`.trim(),
+        notes: `${pushTag} ${fromTag} ${description || ''}`.trim(),
         type: types.income,
       };
     });
