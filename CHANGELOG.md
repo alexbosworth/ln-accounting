@@ -1,5 +1,9 @@
 # Versions
 
+## Version 4.2.5
+
+- `getAccountingReport`: Fix chain transaction costs calculation when local data is absent
+
 ## Version 4.2.4
 
 - `getAccountingReport`: Add `network` argument to support testnet accounting

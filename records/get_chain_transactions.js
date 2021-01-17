@@ -155,8 +155,23 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
             return tx.id === channel.close_transaction_id
           });
 
+          const hasMissingLocalData = (() => {
+            if (!tx) {
+              return true;
+            }
+
+            const inputs = fromHex(tx.transaction).ins;
+
+            // Confirm that the inputs to the tx are local
+            return !!inputs.find(({hash, index}) => {
+              const id = hash.slice().reverse().toString('hex');
+
+              return !getTx.transactions.find(n => n.id === id);
+            });
+          })();
+
           // Exit early when the close transaction is missing
-          if (!tx) {
+          if (hasMissingLocalData) {
             return getBlockstreamTx({
               network,
               request,

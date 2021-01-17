@@ -12,7 +12,7 @@
     "bitcoinjs-lib": "5.2.0",
     "goldengate": "10.0.0",
     "json2csv": "5.0.5",
-    "ln-service": "50.9.4"
+    "ln-service": "50.11.2"
   },
   "description": "lnd accounting reports",
   "devDependencies": {
@@ -35,5 +35,5 @@
   "scripts": {
     "test": "tap test/fiat/*.js test/harmony/*.js test/records/*.js"
   },
-  "version": "4.2.4"
+  "version": "4.2.5"
 }
