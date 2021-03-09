@@ -1,6 +1,6 @@
 # Versions
 
-## Version 4.2.5
+## Version 4.2.6
 
 - `getAccountingReport`: Fix chain transaction costs calculation when local data is absent
 
