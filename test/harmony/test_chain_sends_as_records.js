@@ -44,10 +44,10 @@ const tests = [
 ];
 
 tests.forEach(({args, description, expected}) => {
-  return test(description, ({deepIs, end, equal}) => {
+  return test(description, ({end, equal, strictSame}) => {
     const {records} = chainSendsAsRecords(args);
 
-    deepIs(records, expected.records, 'Fees formatted as records');
+    strictSame(records, expected.records, 'Fees formatted as records');
 
     return end();
   });

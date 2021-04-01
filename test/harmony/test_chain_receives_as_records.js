@@ -57,13 +57,13 @@ const tests = [
 ];
 
 tests.forEach(({args, description, error, expected}) => {
-  return test(description, ({deepIs, end, equal, throws}) => {
+  return test(description, ({end, equal, strictSame, throws}) => {
     if (!!error) {
       throws(() => chainReceivesAsRecords(args), new Error(error), 'Got err');
     } else {
       const {records} = chainReceivesAsRecords(args);
 
-      deepIs(records, expected.records, 'Fees formatted as records');
+      strictSame(records, expected.records, 'Fees formatted as records');
     }
 
     return end();

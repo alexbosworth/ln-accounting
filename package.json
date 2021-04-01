@@ -8,15 +8,15 @@
   },
   "dependencies": {
     "async": "3.2.0",
-    "asyncjs-util": "1.2.3",
+    "asyncjs-util": "1.2.4",
     "bitcoinjs-lib": "5.2.0",
-    "goldengate": "10.0.2",
+    "goldengate": "10.0.3",
     "json2csv": "5.0.6",
-    "ln-service": "51.3.1"
+    "ln-service": "51.5.0"
   },
   "description": "lnd accounting reports",
   "devDependencies": {
-    "tap": "14.11.0"
+    "tap": "15.0.1"
   },
   "engines": {
     "node": ">=10.10.0"
@@ -33,7 +33,7 @@
     "url": "https://github.com/alexbosworth/ln-accounting.git"
   },
   "scripts": {
-    "test": "tap test/fiat/*.js test/harmony/*.js test/records/*.js"
+    "test": "tap --branches=1 --functions=1 --lines=1 --statements=1 test/fiat/*.js test/harmony/*.js test/records/*.js"
   },
-  "version": "4.2.6"
+  "version": "4.2.7"
 }

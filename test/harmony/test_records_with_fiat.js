@@ -96,7 +96,7 @@ const tests = [
 ];
 
 tests.forEach(({args, description, error, expected}) => {
-  return test(description, ({deepIs, end, throws}) => {
+  return test(description, ({end, strictSame, throws}) => {
     if (!!error) {
       throws(() => recordsWithFiat(args), new Error(error), 'Got error');
 
@@ -105,7 +105,7 @@ tests.forEach(({args, description, error, expected}) => {
 
     const {records} = recordsWithFiat(args);
 
-    deepIs(records, expected.records, 'Fiat added to records');
+    strictSame(records, expected.records, 'Fiat added to records');
 
     return end();
   });

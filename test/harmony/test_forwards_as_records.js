@@ -36,13 +36,13 @@ const tests = [
 ];
 
 tests.forEach(({args, description, error, expected}) => {
-  return test(description, ({deepIs, end, throws}) => {
+  return test(description, ({end, strictSame, throws}) => {
     if (!!error) {
       throws(() => forwardsAsRecords(args), new Error(error), 'Got error');
     } else {
       const {records} = forwardsAsRecords(args);
 
-      deepIs(records, expected.records, 'Forwards formatted as records');
+      strictSame(records, expected.records, 'Forwards formatted as records');
     }
 
     return end();

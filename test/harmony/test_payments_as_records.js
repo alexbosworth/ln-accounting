@@ -148,10 +148,10 @@ const tests = [
 ];
 
 tests.forEach(({args, description, expected}) => {
-  return test(description, ({deepIs, end, equal}) => {
+  return test(description, ({end, equal, strictSame}) => {
     const {records} = paymentsAsRecords(args);
 
-    deepIs(records, expected.records, 'Forwards formatted as records');
+    strictSame(records, expected.records, 'Forwards formatted as records');
 
     return end();
   });

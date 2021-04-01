@@ -138,13 +138,13 @@ const tests = [
 ];
 
 tests.forEach(({args, description, error, expected}) => {
-  return test(description, async ({deepIs, end, equal, throws}) => {
+  return test(description, async ({end, equal, strictSame, throws}) => {
     if (!!error) {
       throws(() => categorizeRecords(args), new Error(error), 'Got error');
     } else {
       const categorized = await categorizeRecords(args);
 
-      deepIs(categorized.payments, expected.payments, 'Categorized records');
+      strictSame(categorized.payments, expected.payments, 'Categorized records');
       equal(categorized.payments_csv, expected.payments_csv, 'Categorize csv');
     }
 
