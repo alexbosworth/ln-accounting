@@ -32,10 +32,10 @@ const tests = [
 ];
 
 tests.forEach(({args, description, expected}) => {
-  return test(description, ({equals, end}) => {
+  return test(description, ({equal, end}) => {
     const {notes} = notesForChainTx(args);
 
-    equals(notes, expected.notes, 'Notes for chain transaction');
+    equal(notes, expected.notes, 'Notes for chain transaction');
 
     return end();
   });
