@@ -59,7 +59,7 @@ module.exports = ({currency, fiat, records}) => {
       category: record.category,
       created_at: record.created_at,
       external_id: record.external_id || '',
-      fiat_amount: !cents ? null : amount * cents / fiatDenominator,
+      fiat_amount: !!cents ?  amount * cents / fiatDenominator : undefined,
       from_id: record.from_id || '',
       id: record.id || '',
       notes: formattedNotes({notes: record.notes}).notes,

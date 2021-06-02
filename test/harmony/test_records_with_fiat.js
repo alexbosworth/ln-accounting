@@ -79,7 +79,7 @@ const tests = [
         category: 'category',
         created_at: date,
         external_id: '',
-        fiat_amount: null,
+        fiat_amount: undefined,
         from_id: '',
         id: '',
         notes: '',

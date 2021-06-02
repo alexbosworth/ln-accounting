@@ -1,5 +1,9 @@
 # Versions
 
+## Version 4.3.0
+
+- `getAccountingReport`: Remove requirement to get fiat conversions for records
+
 ## Version 4.2.8
 
 - `getAccountingReport`: Fix chain transaction costs calculation when local data is absent

@@ -35,5 +35,5 @@
   "scripts": {
     "test": "tap --branches=1 --functions=1 --lines=1 --statements=1 test/fiat/*.js test/harmony/*.js test/records/*.js"
   },
-  "version": "4.2.8"
+  "version": "4.3.0"
 }

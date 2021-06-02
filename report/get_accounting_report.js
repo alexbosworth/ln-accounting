@@ -38,7 +38,7 @@ const times = 10;
     [before]: <Records Created Before ISO 8601 Date>
     [category]: <Category Filter String>
     currency: <Base Currency Type String>
-    fiat: <Fiat Currency Type String>
+    [fiat]: <Fiat Currency Type String>
     lnd: <LND gRPC Object>
     [network]: <Network Name String>
     [rate]: <Exchange Function> ({currency, date, fiat}, cbk) => (err, {cents})
@@ -117,10 +117,6 @@ module.exports = (args, cbk) => {
       validate: cbk => {
         if (!args.currency) {
           return cbk([400, 'ExpectedNativeCurrencyAssetType']);
-        }
-
-        if (!args.fiat) {
-          return cbk([400, 'ExpectedConversionCurrencyType']);
         }
 
         if (!args.lnd) {
@@ -383,6 +379,11 @@ module.exports = (args, cbk) => {
 
       // Fiat values for records
       getFiatValues: ['records', ({records}, cbk) => {
+        // Exit early when there is no fiat specified
+        if (!args.fiat) {
+          return cbk(null, {rates: []});
+        }
+
         return getFiatValues({
           currency: args.currency,
           dates: records.map(n => n.created_at),
