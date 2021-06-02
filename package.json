@@ -8,15 +8,15 @@
   },
   "dependencies": {
     "async": "3.2.0",
-    "asyncjs-util": "1.2.4",
+    "asyncjs-util": "1.2.6",
     "bitcoinjs-lib": "5.2.0",
-    "goldengate": "10.0.3",
+    "goldengate": "10.0.6",
     "json2csv": "5.0.6",
-    "ln-service": "51.5.0"
+    "ln-service": "51.8.2"
   },
   "description": "lnd accounting reports",
   "devDependencies": {
-    "tap": "15.0.1"
+    "tap": "15.0.9"
   },
   "engines": {
     "node": ">=10.10.0"
@@ -35,5 +35,5 @@
   "scripts": {
     "test": "tap --branches=1 --functions=1 --lines=1 --statements=1 test/fiat/*.js test/harmony/*.js test/records/*.js"
   },
-  "version": "4.2.7"
+  "version": "4.2.8"
 }
