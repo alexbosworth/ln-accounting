@@ -1,5 +1,9 @@
 # Versions
 
+## Version 4.3.1
+
+- `getAccountingReport`: Fix reporting for AMP push invoices
+
 ## Version 4.3.0
 
 - `getAccountingReport`: Remove requirement to get fiat conversions for records
