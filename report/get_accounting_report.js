@@ -42,7 +42,7 @@ const times = 10;
     lnd: <LND gRPC Object>
     [network]: <Network Name String>
     [rate]: <Exchange Function> ({currency, date, fiat}, cbk) => (err, {cents})
-    [rate_provider]: <Fiat Rate Provider String> // coincap || coindesk
+    [rate_provider]: <Fiat Rate Provider String> // coindesk || coingecko
     request: <Request Function>
   }
 
