@@ -4,8 +4,9 @@ const {returnResult} = require('asyncjs-util');
 
 const getCoincapHistoricRate = require('./get_coincap_historic_rate');
 const getCoindeskHistoricRate = require('./get_coindesk_historic_rate');
+const getCoingeckoHistoricRate = require('./get_coingecko_historic_rate');
 
-const defaultRateProvider = 'coincap';
+const defaultRateProvider = 'coingecko';
 const interval = retryCount => Math.random() * 5000 * Math.pow(2, retryCount);
 const times = 10;
 
@@ -55,6 +56,7 @@ module.exports = ({currency, date, fiat, provider, request}, cbk) => {
         const providers = {
           coincap: getCoincapHistoricRate,
           coindesk: getCoindeskHistoricRate,
+          coingecko: getCoingeckoHistoricRate,
         };
 
         const source = providers[provider || defaultRateProvider];

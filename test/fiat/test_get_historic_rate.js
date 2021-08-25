@@ -1,10 +1,12 @@
-const {test} = require('tap');
+const {test} = require('@alexbosworth/tap');
 
 const getHistoricRate = require('./../../fiat/get_historic_rate');
 
 const date = new Date().toISOString();
 
-const api = ({}, cbk) => cbk(null, null, {data: [{date, priceUsd: 12.3401}]});
+const api = ({}, cbk) => {
+  return cbk(null, null, {market_data: {current_price: {usd: 12.34}}});
+};
 
 const tests = [
   {

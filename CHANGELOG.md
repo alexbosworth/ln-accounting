@@ -1,5 +1,13 @@
 # Versions
 
+## Version 5.0.0
+
+- `getAccountingReport`: Add support for coingecko historic rate lookup, use as default
+
+### Breaking Changes
+
+- Node.js version 12 or higher is now required
+
 ## Version 4.3.1
 
 - `getAccountingReport`: Fix reporting for AMP push invoices
