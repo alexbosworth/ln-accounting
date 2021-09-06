@@ -21,7 +21,7 @@ const times = 10;
   {
     [after]: <Records Created After ISO 8601 Date>
     [before]: <Records Created Before ISO 8601 Date>
-    lnd: <Authenticated LND Object>
+    lnd: <Authenticated LND API Object>
     [network]: <Network Name String>
     request: <Request Function>
   }
@@ -131,12 +131,13 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
               confirmation_count: tx.confirmation_count,
               confirmation_height: tx.confirmation_height,
               created_at: tx.created_at,
+              description: 'Sweep',
               fee: tx.fee || (sumOf(spends.map(n => n.tokens)) - totalOut),
               id: tx.id,
               is_confirmed: tx.is_confirmed,
               is_outgoing: true,
               output_addresses: tx.output_addresses,
-              tokens: tx.tokens,
+              tokens: tx.fee || (sumOf(spends.map(n => n.tokens)) - totalOut),
               transaction: tx.transaction,
             });
           });
@@ -152,7 +153,7 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
 
         return asyncMapSeries(channels, (channel, cbk) => {
           const tx = getTx.transactions.find(tx => {
-            return tx.id === channel.close_transaction_id
+            return tx.id === channel.close_transaction_id;
           });
 
           const hasMissingLocalData = (() => {
@@ -186,6 +187,7 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
                 block_id: res.block_id,
                 confirmation_height: res.confirmation_height,
                 created_at: res.created_at || new Date().toISOString(),
+                description: 'Channel close',
                 fee: res.fee,
                 id: channel.close_transaction_id,
                 is_confirmed: !!res.block_id,
@@ -216,13 +218,13 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
             confirmation_count: tx.confirmation_count,
             confirmation_height: tx.confirmation_height,
             created_at: tx.created_at,
-            description: tx.description,
+            description: `Channel close: ${tx.description}`,
             fee: inputsValue - sumOf(outputsValue),
             id: tx.id,
             is_confirmed: tx.is_confirmed,
             is_outgoing: true,
             output_addresses: tx.output_addresses,
-            tokens: tx.tokens,
+            tokens: inputsValue - sumOf(outputsValue),
             transaction: tx.transaction,
           });
         },
@@ -231,16 +233,17 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
 
       // Consolidate transactions, including missing fees
       transactions: [
+        'getClosed',
         'getClosingFees',
         'getSweepFees',
         'getTx',
-        ({getClosingFees, getSweepFees, getTx}, cbk) =>
+        ({getClosed, getClosingFees, getSweepFees, getTx}, cbk) =>
       {
-        const closes = getClosingFees.map(({id}) => id);
+        const closeIds = getClosed.channels.map(n => n.close_transaction_id);
         const sweeps = getSweepFees.map(({id}) => id);
 
         const normalTx = getTx.transactions.filter(({id}) => {
-          return !closes.includes(id) && !sweeps.includes(id);
+          return !closeIds.includes(id) && !sweeps.includes(id);
         });
 
         const transactions = []

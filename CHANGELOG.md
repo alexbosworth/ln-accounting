@@ -1,5 +1,9 @@
 # Versions
 
+## Version 5.0.1
+
+- `getAccountingReport`: Adjust sweeps to be net zero for transacted amount, plus fees
+
 ## Version 5.0.0
 
 - `getAccountingReport`: Add support for coingecko historic rate lookup, use as default
