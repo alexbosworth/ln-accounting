@@ -99,6 +99,7 @@ const tests = [
     expected: {
       payments: [{
         attempts: [{
+          confirmed_at: '1970-01-01T00:00:00.001Z',
           is_confirmed: false,
           is_failed: true,
           is_pending: false,
@@ -122,6 +123,7 @@ const tests = [
             total_mtokens: '1000',
           },
         }],
+        confirmed_at: undefined,
         created_at: '1970-01-01T00:00:01.000Z',
         destination: Buffer.alloc(33).toString('hex'),
         fee: 1,

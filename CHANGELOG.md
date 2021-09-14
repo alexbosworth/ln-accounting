@@ -1,5 +1,9 @@
 # Versions
 
+## Version 5.0.2
+
+- `getChainTransactions`: Optimize lookup speed when an after date is specified
+
 ## Version 5.0.1
 
 - `getAccountingReport`: Adjust sweeps to be net zero for transacted amount, plus fees

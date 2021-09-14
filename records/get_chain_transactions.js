@@ -3,6 +3,7 @@ const asyncMapSeries = require('async/mapSeries');
 const asyncRetry = require('async/retry');
 const {getChainTransactions} = require('ln-service');
 const {getClosedChannels} = require('ln-service');
+const {getHeight} = require('ln-service');
 const {getSweepTransactions} = require('ln-service');
 const {returnResult} = require('asyncjs-util');
 const {Transaction} = require('bitcoinjs-lib');
@@ -10,9 +11,12 @@ const {Transaction} = require('bitcoinjs-lib');
 const {getBlockstreamTx} = require('./../blockstream');
 const {getBlockstreamVout} = require('./../blockstream');
 
+const dateAsMs = date => new Date(date).getTime();
 const {fromHex} = Transaction;
 const interval = retryCount => 100 * Math.pow(2, retryCount);
 const {isArray} = Array;
+const msAsBlocks = ms => Math.ceil(ms / 1000 / 60 / 2.5);
+const {now} = Date;
 const sumOf = arr => arr.reduce((sum, n) => sum + n, Number());
 const times = 10;
 
@@ -63,11 +67,27 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
       // Get the closed channels
       getClosed: ['validate', ({}, cbk) => getClosedChannels({lnd}, cbk)],
 
+      // Get the chain height
+      getHeight: ['validate', ({}, cbk) => getHeight({lnd}, cbk)],
+
       // Get the sweep transactions
       getSweeps: ['validate', ({}, cbk) => getSweepTransactions({lnd}, cbk)],
 
       // Get the regular set of chain transactions
-      getTx: ['validate', ({}, cbk) => getChainTransactions({lnd}, cbk)],
+      getTx: ['getHeight', ({getHeight}, cbk) => {
+        // Exit early when there is no after constraint
+        if (!after) {
+          return getChainTransactions({lnd}, cbk);
+        }
+
+        const height = getHeight.current_block_height;
+
+        return getChainTransactions({
+          lnd,
+          after: height - msAsBlocks(now() - dateAsMs(after)),
+        },
+        cbk);
+      }],
 
       // Time-relevant sweep transactions
       sweepTransactions: ['getSweeps', ({getSweeps}, cbk) => {
@@ -146,10 +166,28 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
       }],
 
       // Calculate closing fees for channels that were locally initiated
-      getClosingFees: ['getClosed', 'getTx', ({getClosed, getTx}, cbk) => {
+      getClosingFees: [
+        'getClosed',
+        'getHeight',
+        'getTx',
+        ({getClosed, getHeight, getTx}, cbk) =>
+      {
+        const height = getHeight.current_block_height;
+
         const channels = getClosed.channels
           .filter(n => !!n.close_transaction_id)
-          .filter(n => n.is_partner_initiated === false);
+          .filter(n => n.is_partner_initiated === false)
+          .filter(channel => {
+            // Exit early when not checking channel close height vs after
+            if (!after || !channel.close_confirm_height) {
+              return true;
+            }
+
+            const afterHeight = height - msAsBlocks(now() - dateAsMs(after));
+
+            // Do not consider channels that closed before the after constraint
+            return channel.close_confirm_height > afterHeight;
+          });
 
         return asyncMapSeries(channels, (channel, cbk) => {
           const tx = getTx.transactions.find(tx => {
