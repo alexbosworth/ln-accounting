@@ -8,17 +8,17 @@ const {getSweepTransactions} = require('ln-service');
 const {returnResult} = require('asyncjs-util');
 const {Transaction} = require('bitcoinjs-lib');
 
-const {getBlockstreamTx} = require('./../blockstream');
-const {getBlockstreamVout} = require('./../blockstream');
+const {getProxyTx} = require('./../esplora');
+const {getProxyVout} = require('./../esplora');
 
 const dateAsMs = date => new Date(date).getTime();
 const {fromHex} = Transaction;
-const interval = retryCount => 100 * Math.pow(2, retryCount);
+const interval = 200;
 const {isArray} = Array;
 const msAsBlocks = ms => Math.ceil(ms / 1000 / 60 / 2.5);
 const {now} = Date;
 const sumOf = arr => arr.reduce((sum, n) => sum + n, Number());
-const times = 10;
+const times = 15;
 
 /** Get chain transactions, including sweep fees
 
@@ -116,7 +116,7 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
             }
 
             return asyncRetry({interval, times}, cbk => {
-              return getBlockstreamVout({
+              return getProxyVout({
                 network,
                 request,
                 id: spend.transaction_id,
@@ -211,29 +211,32 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
 
           // Exit early when the close transaction is missing
           if (hasMissingLocalData) {
-            return getBlockstreamTx({
-              network,
-              request,
-              id: channel.close_transaction_id,
-            },
-            (err, res) => {
-              if (!!err) {
-                return cbk(err);
-              }
-
-              return cbk(null, {
-                block_id: res.block_id,
-                confirmation_height: res.confirmation_height,
-                created_at: res.created_at || new Date().toISOString(),
-                description: 'Channel close',
-                fee: res.fee,
+            return asyncRetry({interval, times}, cbk => {
+              return getProxyTx({
+                network,
+                request,
                 id: channel.close_transaction_id,
-                is_confirmed: !!res.block_id,
-                is_outgoing: true,
-                output_addresses: res.output_addresses,
-                tokens: res.fee,
+              },
+              (err, res) => {
+                if (!!err) {
+                  return cbk(err);
+                }
+
+                return cbk(null, {
+                  block_id: res.block_id,
+                  confirmation_height: res.confirmation_height,
+                  created_at: res.created_at,
+                  description: 'Channel close',
+                  fee: res.fee,
+                  id: res.id,
+                  is_confirmed: res.is_confirmed,
+                  is_outgoing: true,
+                  output_addresses: res.output_addresses,
+                  tokens: res.fee,
+                });
               });
-            });
+            },
+            cbk);
           }
 
           const inputs = fromHex(tx.transaction).ins.map(({hash, index}) => {
