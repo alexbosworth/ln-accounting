@@ -75,7 +75,7 @@ const tests = [
         is_private: false,
         is_push: undefined,
         mtokens: '1000',
-        payment: '0000000000000000000000000000000000000000000000000000000000000000',
+        payment: undefined,
         payments: [],
         received: 1,
         received_mtokens: '1000',
