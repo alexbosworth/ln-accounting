@@ -1,6 +1,6 @@
 # Versions
 
-## Version 5.0.6
+## Version 5.0.7
 
 - `getChainTransactions`: Add mempool space tx data lookup method
 

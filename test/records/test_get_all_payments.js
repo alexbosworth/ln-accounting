@@ -99,7 +99,9 @@ const tests = [
     expected: {
       payments: [{
         attempts: [{
-          confirmed_at: '1970-01-01T00:00:00.001Z',
+          confirmed_at: undefined,
+          created_at: '1970-01-01T00:00:00.001Z',
+          failed_at: '1970-01-01T00:00:00.001Z',
           is_confirmed: false,
           is_failed: true,
           is_pending: false,

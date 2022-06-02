@@ -10,9 +10,9 @@
     "async": "3.2.3",
     "asyncjs-util": "1.2.9",
     "bitcoinjs-lib": "6.0.1",
-    "goldengate": "11.1.0",
+    "goldengate": "11.2.2",
     "json2csv": "5.0.7",
-    "ln-service": "53.10.0"
+    "ln-service": "53.17.1"
   },
   "description": "lnd accounting reports",
   "devDependencies": {
@@ -35,5 +35,5 @@
   "scripts": {
     "test": "tap --branches=1 --functions=1 --lines=1 --statements=1 test/blockstream/*.js test/fiat/*.js test/harmony/*.js test/records/*.js"
   },
-  "version": "5.0.6"
+  "version": "5.0.7"
 }
