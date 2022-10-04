@@ -4,6 +4,7 @@ const {returnResult} = require('asyncjs-util');
 const asCoingeckoDate = yyyymmdd => yyyymmdd.split('-').reverse().join('-');
 const centsPerDollar = 100;
 const dateComponents = date => date.substring(0, 'yyyy-mm-dd'.length);
+const {keys} = Object;
 const remoteServiceTimeoutMs = 30 * 1000;
 const url = 'https://api.coingecko.com/api/v3/coins/bitcoin/history';
 
@@ -13,6 +14,7 @@ const url = 'https://api.coingecko.com/api/v3/coins/bitcoin/history';
     currency: <Currency Type String>
     date: <ISO 8601 Date String>
     fiat: <Fiat Type String>
+    rates: <Known Rates Object>
     request: <Request Function>
   }
 
@@ -21,7 +23,7 @@ const url = 'https://api.coingecko.com/api/v3/coins/bitcoin/history';
     cents: <Cents Per Token Number>
   }
 */
-module.exports = ({currency, date, fiat, request}, cbk) => {
+module.exports = ({currency, date, fiat, rates, request}, cbk) => {
   return new Promise((resolve, reject) => {
     return asyncAuto({
       // Check arguments
@@ -38,6 +40,10 @@ module.exports = ({currency, date, fiat, request}, cbk) => {
           return cbk([400, 'UnsupportedFiatTypeForCoingeckoFiatRateLookup']);
         }
 
+        if (!rates) {
+          return cbk([400, 'ExpectedKnownRatesForCoingeckoFiatRateLookup']);
+        }
+
         if (!request) {
           return cbk([400, 'ExpectedRequestMethodForCoingeckoFiatRateLookup']);
         }
@@ -47,6 +53,16 @@ module.exports = ({currency, date, fiat, request}, cbk) => {
 
       // Get rate
       getRate: ['validate', ({}, cbk) => {
+        // Look for an existing rate lookup
+        const matching = keys(rates).find(key => {
+          return dateComponents(key) === dateComponents(date);
+        });
+
+        // Exit early when there is a cached result
+        if (!!rates[matching]) {
+          return cbk(null, {cents: rates[matching]});
+        }
+
         return request({
           url,
           json: true,

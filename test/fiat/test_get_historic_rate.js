@@ -8,45 +8,53 @@ const api = ({}, cbk) => {
   return cbk(null, null, {market_data: {current_price: {usd: 12.34}}});
 };
 
+const makeArgs = overrides => {
+  const args = {
+    date: new Date().toISOString(),
+    currency: 'BTC',
+    fiat: 'USD',
+    rates: {},
+    request: ({qs}, cbk) => api({qs}, cbk),
+  };
+
+  Object.keys(overrides).forEach(k => args[k] = overrides[k]);
+
+  return args;
+};
+
 const tests = [
   {
-    args: {},
+    args: makeArgs({currency: undefined}),
     description: 'A currency code is required',
     error: [400, 'ExpectedCurrencyToGetHistoricRate'],
   },
   {
-    args: {currency: 'BTC'},
+    args: makeArgs({date: undefined}),
     description: 'A date is required',
     error: [400, 'ExpectedDateToGetHistoricRate'],
   },
   {
-    args: {date, currency: 'BTC'},
+    args: makeArgs({fiat: undefined}),
     description: 'A fiat type is required to get historic rate',
     error: [400, 'ExpectedFiatToGetHistoricRate'],
   },
   {
-    args: {date, currency: 'BTC', fiat: 'USD'},
+    args: makeArgs({rates: undefined}),
+    description: 'Past rates are required to get historic rate',
+    error: [400, 'ExpectedRatesToGetHistoricRate'],
+  },
+  {
+    args: makeArgs({request: undefined}),
     description: 'A request function is required to get historic rate',
     error: [400, 'ExpectedRequestFunctionToGetHistoricRate'],
   },
   {
-    args: {
-      date,
-      currency: 'BTC',
-      fiat: 'USD',
-      provider: 'provider',
-      request: () => {},
-    },
-    description: 'A request function is required to get historic rate',
+    args: makeArgs({provider: 'provider'}),
+    description: 'A known rate provider is required to get historic rate',
     error: [400, 'ExpectedKnownRateProviderToGetHistoricRate'],
   },
   {
-    args: {
-      date,
-      currency: 'BTC',
-      fiat: 'USD',
-      request: ({qs}, cbk) => api({qs}, cbk),
-    },
+    args: makeArgs({}),
     description: 'Get historic fiat rates',
     expected: {cents: 1234},
   },

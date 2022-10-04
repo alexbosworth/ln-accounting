@@ -1,5 +1,11 @@
 # Versions
 
+## Version 6.0.0
+
+### Breaking Changes
+
+- Node.js 14 or higher is now required
+
 ## Version 5.0.7
 
 - `getChainTransactions`: Add mempool space tx data lookup method

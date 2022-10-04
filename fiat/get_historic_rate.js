@@ -19,6 +19,7 @@ const times = 10;
     date: <ISO 8601 Date String>
     fiat: <Fiat Type String>
     [provider]: <Historic Rate Source Type String>
+    rates: <Known Rates Object>
     request: <Request Function>
   }
 
@@ -27,7 +28,7 @@ const times = 10;
     cents: <Cents Per Token Number>
   }
 */
-module.exports = ({currency, date, fiat, provider, request}, cbk) => {
+module.exports = ({currency, date, fiat, provider, rates, request}, cbk) => {
   return new Promise((resolve, reject) => {
     return asyncAuto({
       // Check arguments
@@ -42,6 +43,10 @@ module.exports = ({currency, date, fiat, provider, request}, cbk) => {
 
         if (!fiat) {
           return cbk([400, 'ExpectedFiatToGetHistoricRate']);
+        }
+
+        if (!rates) {
+          return cbk([400, 'ExpectedRatesToGetHistoricRate']);
         }
 
         if (!request) {
@@ -66,7 +71,7 @@ module.exports = ({currency, date, fiat, provider, request}, cbk) => {
         }
 
         return asyncRetry({interval, times}, cbk => {
-          return source({currency, date, fiat, request}, cbk);
+          return source({currency, date, fiat, rates, request}, cbk);
         },
         cbk);
       }],

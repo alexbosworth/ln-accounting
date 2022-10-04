@@ -46,6 +46,7 @@ const tests = [
                 r_preimage: Buffer.alloc(32),
                 settle_date: 1,
                 settled: true,
+                state: 'SETTLED',
                 value: '1',
                 value_msat: '1000',
               }],

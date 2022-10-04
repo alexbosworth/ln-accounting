@@ -2,71 +2,72 @@ const {test} = require('@alexbosworth/tap');
 
 const method = require('./../../fiat/get_coingecko_historic_rate');
 
+const makeArgs = overrides => {
+  const args = {
+    date: new Date().toISOString(),
+    currency: 'BTC',
+    fiat: 'USD',
+    rates: {},
+    request: ({qs}, cbk) => api({qs}, cbk),
+  };
+
+  Object.keys(overrides).forEach(k => args[k] = overrides[k]);
+
+  return args;
+};
+
 const api = ({qs}, cbk) => {
   return cbk(null, null, {market_data: {current_price: {usd: 12.34}}});
 };
 
 const tests = [
   {
-    args: {},
+    args: makeArgs({currency: undefined}),
     description: 'A currency is required',
     error: [400, 'UnsupportedCurrencyForCoingeckoFiatRateLookup'],
   },
   {
-    args: {currency: 'BTC'},
+    args: makeArgs({date: undefined}),
     description: 'A date is required',
     error: [400, 'ExpectedDateForCoingeckoRateLookup'],
   },
   {
-    args: {currency: 'BTC', date: new Date().toISOString()},
-    description: 'A currency type is required',
+    args: makeArgs({fiat: undefined}),
+    description: 'A fiat type is required',
     error: [400, 'UnsupportedFiatTypeForCoingeckoFiatRateLookup'],
   },
   {
-    args: {currency: 'BTC', date: new Date().toISOString(), fiat: 'USD'},
+    args: makeArgs({rates: undefined}),
+    description: 'A rates object is required',
+    error: [400, 'ExpectedKnownRatesForCoingeckoFiatRateLookup'],
+  },
+  {
+    args: makeArgs({request: undefined}),
     description: 'A request method is required',
     error: [400, 'ExpectedRequestMethodForCoingeckoFiatRateLookup'],
   },
   {
-    args: {
-      date: new Date().toISOString(),
-      currency: 'BTC',
-      fiat: 'USD',
-      request: ({}, cbk) => cbk('err'),
-    },
+    args: makeArgs({request: ({}, cbk) => cbk('err')}),
     description: 'Errors returned from request',
     error: [503, 'UnexpectedErrGettingCoingeckoPastRate', {err: 'err'}],
   },
   {
-    args: {
-      date: new Date().toISOString(),
-      currency: 'BTC',
-      fiat: 'USD',
-      request: ({}, cbk) => cbk(),
-    },
+    args: makeArgs({request: ({}, cbk) => cbk()}),
     description: 'A body is expected in response',
     error: [503, 'UnexpectedResponseInCoingeckoPastRateResponse'],
   },
   {
-    args: {
-      date: new Date().toISOString(),
-      currency: 'BTC',
-      fiat: 'USD',
+    args: makeArgs({
       request: ({}, cbk) => cbk(null, null, {
         market_data: {current_price: {}},
       }),
-    },
+    }),
     description: 'A price is expected in response',
     error: [503, 'ExpectedCoingeckoCurrentPriceForFiat'],
   },
   {
-    args: {
-      date: new Date().toISOString(),
-      currency: 'BTC',
-      fiat: 'USD',
-      request: ({qs}, cbk) => api({qs}, cbk),
-    },
-    description: 'Get coindesk historic rate',
+    args: makeArgs({}),
+    description: 'Get coingecko historic rate',
     expected: {cents: 1234},
   },
 ];

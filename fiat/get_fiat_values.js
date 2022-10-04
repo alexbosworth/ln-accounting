@@ -73,6 +73,7 @@ module.exports = ({currency, dates, fiat, provider, rate, request}, cbk) => {
               date,
               fiat,
               provider,
+              rates,
               request,
             },
             (err, rate) => {
