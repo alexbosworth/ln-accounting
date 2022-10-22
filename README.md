@@ -119,6 +119,25 @@ Get chain transactions, including sweep fees
       }]
     }
 
+## parseAmount
+
+Parse a described amount into tokens
+
+    {
+      amount: <Amount String>
+      [variables]: {
+        <Name String>: <Amount Number>
+      }
+    }
+
+    @throws
+    <Error>
+
+    @returns
+    {
+      tokens: <Tokens Number>
+    }
+
 ## rateProviders
 
 Rate provider source options
