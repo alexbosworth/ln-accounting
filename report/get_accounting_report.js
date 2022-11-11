@@ -34,8 +34,8 @@ const times = 10;
   Note: Chain fees does not include chain fees paid to close channels
 
   {
-    [after]: <Records Created After ISO 8601 Date>
-    [before]: <Records Created Before ISO 8601 Date>
+    [after]: <Records Created After ISO 8601 Date String>
+    [before]: <Records Created Before ISO 8601 Date String>
     [category]: <Category Filter String>
     currency: <Base Currency Type String>
     [fiat]: <Fiat Currency Type String>
@@ -191,7 +191,12 @@ module.exports = (args, cbk) => {
         }
 
         // Since there is no way to page by settle date, get all the invoices
-        return getAllInvoices({lnd: args.lnd}, cbk);
+        return getAllInvoices({
+          after: args.after,
+          before: args.before,
+          lnd: args.lnd,
+        },
+        cbk);
       }],
 
       // Get payments

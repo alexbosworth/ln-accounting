@@ -3,10 +3,14 @@ const asyncUntil = require('async/until');
 const {getInvoices} = require('ln-service');
 const {returnResult} = require('asyncjs-util');
 
-/** Get all invoices
+const limit = 1000;
+
+/** Get all confirmed invoices
 
   {
-    lnd: <Authenticated LND gRPC API Object>
+    [after]: <Invoices Confirmed After ISO 8601 Date String>
+    [before]: <Invoices Confirmed Before ISO 8601 Date String>
+    lnd: <Authenticated LND API Object>
   }
 
   @returns via cbk or Promise
@@ -39,7 +43,7 @@ const {returnResult} = require('asyncjs-util');
     }]
   }
 */
-module.exports = ({lnd}, cbk) => {
+module.exports = ({after, before, lnd}, cbk) => {
   return new Promise((resolve, reject) => {
     return asyncAuto({
       // Check arguments
@@ -60,14 +64,32 @@ module.exports = ({lnd}, cbk) => {
         return asyncUntil(
           cbk => cbk(null, token === false),
           cbk => {
-            return getInvoices({lnd, token}, (err, res) => {
+            return getInvoices({
+              lnd,
+              token,
+              limit: !token ? limit : undefined,
+            },
+            (err, res) => {
               if (!!err) {
                 return cbk(err);
               }
 
               token = res.next || false;
 
-              res.invoices.forEach(invoice => invoices.push(invoice));
+              res.invoices
+                .filter(n => !!n.confirmed_at && !!n.is_confirmed)
+                .filter(invoice => {
+                  if (!!after && invoice.confirmed_at <= after) {
+                    return false;
+                  }
+
+                  if (!!before && invoice.confirmed_at > before) {
+                    return false;
+                  }
+
+                  return true;
+                })
+                .forEach(invoice => invoices.push(invoice));
 
               return cbk(null, invoices);
             });
