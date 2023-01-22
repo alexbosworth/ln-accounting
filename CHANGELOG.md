@@ -1,6 +1,6 @@
 # Versions
 
-## Version 6.1.2
+## Version 6.1.3
 
 - `parseAmount`: Add method to parse a human readable amount into tokens
 

@@ -1,4 +1,4 @@
-const {Parser} = require('json2csv');
+const {Parser} = require('@json2csv/plainjs');
 
 const {fields} = require('./harmony');
 
