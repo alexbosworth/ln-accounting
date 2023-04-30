@@ -1,5 +1,11 @@
 # Versions
 
+## Version 7.0.0
+
+### Breaking Changes
+
+- Node.js 16 or higher is now required
+
 ## Version 6.1.3
 
 - `parseAmount`: Add method to parse a human readable amount into tokens
