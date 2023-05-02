@@ -13,7 +13,7 @@
     "bitcoinjs-lib": "6.1.0",
     "goldengate": "12.0.5",
     "hot-formula-parser": "4.0.0",
-    "ln-service": "56.2.0"
+    "ln-service": "56.3.0"
   },
   "description": "lnd accounting reports",
   "devDependencies": {
@@ -36,5 +36,5 @@
   "scripts": {
     "test": "tap --branches=1 --functions=1 --lines=1 --statements=1 test/blockstream/*.js test/fiat/*.js test/harmony/*.js test/records/*.js test/report/*.js"
   },
-  "version": "7.0.0"
+  "version": "7.0.1"
 }

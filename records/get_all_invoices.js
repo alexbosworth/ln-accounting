@@ -3,6 +3,7 @@ const asyncUntil = require('async/until');
 const {getInvoices} = require('ln-service');
 const {returnResult} = require('asyncjs-util');
 
+const bufferTimeMs = 1000 * 60 * 60 * 36;
 const limit = 1000;
 
 /** Get all confirmed invoices
@@ -55,8 +56,20 @@ module.exports = ({after, before, lnd}, cbk) => {
         return cbk();
       },
 
+      // Adjust after date to allow for date slippage
+      createdAfter: ['validate', ({}, cbk) => {
+        if (!after) {
+          return cbk(null, undefined);
+        }
+
+        // Adjust the after date to make sure no records are being left out
+        const target = new Date(after).getTime() - bufferTimeMs;
+
+        return cbk(null, new Date(target));
+      }],
+
       // Get all the invoices through iterative paging
-      getInvoices: ['validate', ({}, cbk) => {
+      getInvoices: ['createdAfter', ({createdAfter}, cbk) => {
         const invoices = [];
         let token;
 
@@ -67,6 +80,7 @@ module.exports = ({after, before, lnd}, cbk) => {
             return getInvoices({
               lnd,
               token,
+              created_after: createdAfter,
               limit: !token ? limit : undefined,
             },
             (err, res) => {
