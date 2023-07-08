@@ -1,4 +1,6 @@
-const {test} = require('@alexbosworth/tap');
+const {equal} = require('node:assert').strict;
+const {rejects} = require('node:assert').strict;
+const test = require('node:test');
 
 const getHistoricRate = require('./../../fiat/get_historic_rate');
 
@@ -61,15 +63,15 @@ const tests = [
 ];
 
 tests.forEach(({args, description, error, expected}) => {
-  return test(description, async ({end, equal, rejects}) => {
+  return test(description, async () => {
     if (!!error) {
-      rejects(getHistoricRate(args), error, 'Gote expected error');
+      await rejects(getHistoricRate(args), error, 'Gote expected error');
     } else {
       const {cents} = await getHistoricRate(args);
 
       equal(cents, expected.cents, 'Rate returned');
     }
 
-    return end();
+    return;
   });
 });

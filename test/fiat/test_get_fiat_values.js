@@ -1,4 +1,6 @@
-const {test} = require('@alexbosworth/tap');
+const {deepEqual} = require('node:assert').strict;
+const {rejects} = require('node:assert').strict;
+const test = require('node:test');
 
 const {getFiatValues} = require('./../../fiat/');
 
@@ -30,10 +32,10 @@ const tests = [
       currency: 'BTC',
       dates: [date],
       fiat: 'USD',
-      rate: ({}, cbk) => cbk('err'),
+      rate: ({}, cbk) => cbk(['err']),
     },
     description: 'Rate method errors are passed back',
-    error: 'err',
+    error: ['err'],
   },
   {
     args: {
@@ -58,15 +60,15 @@ const tests = [
 ];
 
 tests.forEach(({args, description, error, expected}) => {
-  return test(description, async ({end, equal, rejects, strictSame}) => {
+  return test(description, async () => {
     if (!!error) {
       await rejects(getFiatValues(args), error, 'Got expected error');
     } else {
       const {rates} = await getFiatValues(args);
 
-      strictSame(rates, expected.rates, 'Rates returned');
+      deepEqual(rates, expected.rates, 'Rates returned');
     }
 
-    return end();
+    return;
   });
 });

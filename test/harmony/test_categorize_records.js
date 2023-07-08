@@ -1,4 +1,7 @@
-const {test} = require('@alexbosworth/tap');
+const {deepEqual} = require('node:assert').strict;
+const {equal} = require('node:assert').strict;
+const test = require('node:test');
+const {throws} = require('node:assert').strict;
 
 const {categorizeRecords} = require('./../../harmony');
 
@@ -138,13 +141,13 @@ const tests = [
 ];
 
 tests.forEach(({args, description, error, expected}) => {
-  return test(description, async ({end, equal, strictSame, throws}) => {
+  return test(description, (t, end) => {
     if (!!error) {
       throws(() => categorizeRecords(args), new Error(error), 'Got error');
     } else {
-      const categorized = await categorizeRecords(args);
+      const categorized = categorizeRecords(args);
 
-      strictSame(categorized.payments, expected.payments, 'Categorized records');
+      deepEqual(categorized.payments, expected.payments, 'Categorized');
       equal(categorized.payments_csv, expected.payments_csv, 'Categorize csv');
     }
 

@@ -1,4 +1,6 @@
-const {test} = require('@alexbosworth/tap');
+const {deepEqual} = require('node:assert').strict;
+const {rejects} = require('node:assert').strict;
+const test = require('node:test');
 
 const method = require('./../../fiat/get_coingecko_historic_rate');
 
@@ -73,15 +75,15 @@ const tests = [
 ];
 
 tests.forEach(({args, description, error, expected}) => {
-  return test(description, async ({end, rejects, strictSame}) => {
+  return test(description, async () => {
     if (!!error) {
       await rejects(method(args), error, 'Got expected error');
     } else {
       const res = await method(args);
 
-      strictSame(res, expected, 'Got expected return value');
+      deepEqual(res, expected, 'Got expected return value');
     }
 
-    return end();
+    return;
   });
 });

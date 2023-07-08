@@ -1,4 +1,6 @@
-const {test} = require('@alexbosworth/tap');
+const {deepEqual} = require('node:assert').strict;
+const test = require('node:test');
+const {throws} = require('node:assert').strict;
 
 const {chainReceivesAsRecords} = require('./../../harmony');
 
@@ -57,13 +59,13 @@ const tests = [
 ];
 
 tests.forEach(({args, description, error, expected}) => {
-  return test(description, ({end, equal, strictSame, throws}) => {
+  return test(description, (t, end) => {
     if (!!error) {
       throws(() => chainReceivesAsRecords(args), new Error(error), 'Got err');
     } else {
       const {records} = chainReceivesAsRecords(args);
 
-      strictSame(records, expected.records, 'Fees formatted as records');
+      deepEqual(records, expected.records, 'Fees formatted as records');
     }
 
     return end();

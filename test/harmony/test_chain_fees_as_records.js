@@ -1,4 +1,5 @@
-const {test} = require('@alexbosworth/tap');
+const {deepEqual} = require('node:assert').strict;
+const test = require('node:test');
 
 const {chainFeesAsRecords} = require('./../../harmony');
 
@@ -29,10 +30,10 @@ const tests = [
 ];
 
 tests.forEach(({args, description, expected}) => {
-  return test(description, ({end, equal, strictSame}) => {
+  return test(description, (t, end) => {
     const {records} = chainFeesAsRecords(args);
 
-    strictSame(records, expected.records, 'Fees formatted as records');
+    deepEqual(records, expected.records, 'Fees formatted as records');
 
     return end();
   });

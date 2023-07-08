@@ -1,6 +1,8 @@
-const {test} = require('@alexbosworth/tap');
+const {equal} = require('node:assert').strict;
+const {rejects} = require('node:assert').strict;
+const test = require('node:test');
 
-const getCoincapHistoricRate = require('./../../fiat/get_coincap_historic_rate');
+const method = require('./../../fiat/get_coincap_historic_rate');
 
 const date = new Date().toISOString();
 
@@ -70,15 +72,15 @@ const tests = [
 ];
 
 tests.forEach(({args, description, error, expected}) => {
-  return test(description, async ({end, equal, rejects}) => {
+  return test(description, async () => {
     if (!!error) {
-      rejects(getCoincapHistoricRate(args), error, 'Got expected error');
+      await rejects(method(args), error, 'Got expected error');
     } else {
-      const {cents} = await getCoincapHistoricRate(args);
+      const {cents} = await method(args);
 
       equal(cents, expected.cents, 'Cents returned');
     }
 
-    return end();
+    return;
   });
 });

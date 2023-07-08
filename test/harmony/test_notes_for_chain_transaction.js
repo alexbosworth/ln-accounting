@@ -1,4 +1,5 @@
-const {test} = require('@alexbosworth/tap');
+const {equal} = require('node:assert').strict;
+const test = require('node:test');
 
 const notesForChainTx = require('./../../harmony/notes_for_chain_transaction');
 
@@ -32,7 +33,7 @@ const tests = [
 ];
 
 tests.forEach(({args, description, expected}) => {
-  return test(description, ({equal, end}) => {
+  return test(description, (t, end) => {
     const {notes} = notesForChainTx(args);
 
     equal(notes, expected.notes, 'Notes for chain transaction');

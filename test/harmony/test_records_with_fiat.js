@@ -1,4 +1,6 @@
-const {test} = require('@alexbosworth/tap');
+const {deepEqual} = require('node:assert').strict;
+const test = require('node:test');
+const {throws} = require('node:assert').strict;
 
 const {recordsWithFiat} = require('./../../harmony');
 
@@ -96,16 +98,14 @@ const tests = [
 ];
 
 tests.forEach(({args, description, error, expected}) => {
-  return test(description, ({end, strictSame, throws}) => {
+  return test(description, (t, end) => {
     if (!!error) {
       throws(() => recordsWithFiat(args), new Error(error), 'Got error');
+    } else {
+      const {records} = recordsWithFiat(args);
 
-      return end();
+      deepEqual(records, expected.records, 'Fiat added to records');
     }
-
-    const {records} = recordsWithFiat(args);
-
-    strictSame(records, expected.records, 'Fiat added to records');
 
     return end();
   });
