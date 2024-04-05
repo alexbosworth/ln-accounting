@@ -1,5 +1,11 @@
 # Versions
 
+## Version 8.0.0
+
+### Breaking Changes
+
+- Node.js 18 or higher is now required
+
 ## Version 7.0.2
 
 ### Breaking Changes
