@@ -11,9 +11,9 @@
     "async": "3.2.6",
     "asyncjs-util": "1.2.12",
     "bitcoinjs-lib": "6.1.6",
-    "goldengate": "14.0.8",
+    "goldengate": "14.0.9",
     "hot-formula-parser": "4.0.0",
-    "ln-service": "57.20.2"
+    "ln-service": "57.22.0"
   },
   "description": "lnd accounting reports",
   "engines": {
@@ -33,5 +33,5 @@
   "scripts": {
     "test": "npx nyc@17.0.0 node --experimental-test-coverage --test"
   },
-  "version": "8.0.4"
+  "version": "8.0.5"
 }
