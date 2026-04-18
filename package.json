@@ -13,7 +13,7 @@
     "bitcoinjs-lib": "6.1.7",
     "goldengate": "15.0.0",
     "hot-formula-parser": "4.0.0",
-    "ln-service": "58.0.2"
+    "ln-service": "58.0.4"
   },
   "description": "lnd accounting reports",
   "engines": {
@@ -33,5 +33,5 @@
   "scripts": {
     "test": "npx nyc@17.1.0 node --experimental-test-coverage --test"
   },
-  "version": "9.0.0"
+  "version": "9.0.1"
 }
