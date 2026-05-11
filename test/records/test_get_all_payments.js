@@ -128,7 +128,6 @@ const tests = [
             hops: [
               {
                 channel: '0x0x1',
-                channel_capacity: 1,
                 fee: 1,
                 fee_mtokens: '1000',
                 forward: 1,
@@ -138,7 +137,6 @@ const tests = [
               },
               {
                 channel: '0x0x1',
-                channel_capacity: 1,
                 fee: 1,
                 fee_mtokens: '1000',
                 forward: 1,
