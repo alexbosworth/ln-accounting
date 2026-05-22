@@ -1,6 +1,6 @@
 # Versions
 
-## Version 10.0.1
+## Version 10.0.2
 
 ### Breaking Changes
 
