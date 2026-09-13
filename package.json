@@ -1,4 +1,7 @@
 {
+  "allowScripts": {
+    "protobufjs@7.6.6": true
+  },
   "author": {
     "name": "Alex Bosworth",
     "url": "https://twitter.com/alexbosworth"
@@ -11,9 +14,9 @@
     "async": "3.2.6",
     "asyncjs-util": "1.2.12",
     "bitcoinjs-lib": "6.1.7",
-    "goldengate": "16.0.5",
+    "goldengate": "16.0.7",
     "hot-formula-parser": "4.0.0",
-    "ln-service": "59.2.4"
+    "ln-service": "59.4.1"
   },
   "description": "lnd accounting reports",
   "engines": {
@@ -28,10 +31,10 @@
   "name": "ln-accounting",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alexbosworth/ln-accounting.git"
+    "url": "git+https://github.com/alexbosworth/ln-accounting.git"
   },
   "scripts": {
     "test": "node --experimental-test-coverage --test"
   },
-  "version": "10.0.5"
+  "version": "10.0.6"
 }
