@@ -10,13 +10,13 @@
     "url": "https://github.com/alexbosworth/ln-accounting/issues"
   },
   "dependencies": {
+    "@alexbosworth/blockchain": "4.8.0",
+    "@alexbosworth/formulas": "1.4.0",
     "@json2csv/plainjs": "7.0.8",
     "async": "3.2.6",
     "asyncjs-util": "1.2.12",
-    "bitcoinjs-lib": "6.1.7",
     "goldengate": "16.0.7",
-    "hot-formula-parser": "4.0.0",
-    "ln-service": "59.4.1"
+    "ln-service": "59.5.0"
   },
   "description": "lnd accounting reports",
   "engines": {
@@ -36,5 +36,5 @@
   "scripts": {
     "test": "node --experimental-test-coverage --test"
   },
-  "version": "10.0.6"
+  "version": "10.0.7"
 }

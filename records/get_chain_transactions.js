@@ -1,18 +1,17 @@
 const asyncAuto = require('async/auto');
 const asyncMapSeries = require('async/mapSeries');
 const asyncRetry = require('async/retry');
+const {componentsOfTransaction} = require('@alexbosworth/blockchain');
 const {getChainTransactions} = require('ln-service');
 const {getClosedChannels} = require('ln-service');
 const {getHeight} = require('ln-service');
 const {getSweepTransactions} = require('ln-service');
 const {returnResult} = require('asyncjs-util');
-const {Transaction} = require('bitcoinjs-lib');
 
 const {getProxyTx} = require('./../esplora');
 const {getProxyVout} = require('./../esplora');
 
 const dateAsMs = date => new Date(date).getTime();
-const {fromHex} = Transaction;
 const interval = 200;
 const {isArray} = Array;
 const msAsBlocks = ms => Math.ceil(ms / 1000 / 60 / 2.5);
@@ -141,9 +140,11 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
               return cbk(err);
             }
 
-            const {outs} = fromHex(tx.transaction);
+            const {outputs} = componentsOfTransaction({
+              transaction: tx.transaction,
+            });
 
-            const totalOut = outs.reduce((sum, n) => sum + n.value, Number());
+            const totalOut = sumOf(outputs.map(n => n.tokens));
 
             return cbk(null, {
               spends,
@@ -194,17 +195,17 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
             return tx.id === channel.close_transaction_id;
           });
 
+          const components = !tx ? null : componentsOfTransaction({
+            transaction: tx.transaction,
+          });
+
           const hasMissingLocalData = (() => {
-            if (!tx) {
+            if (!components) {
               return true;
             }
 
-            const inputs = fromHex(tx.transaction).ins;
-
             // Confirm that the inputs to the tx are local
-            return !!inputs.find(({hash, index}) => {
-              const id = hash.slice().reverse().toString('hex');
-
+            return !!components.inputs.find(({id}) => {
               return !getTx.transactions.find(n => n.id === id);
             });
           })();
@@ -239,20 +240,22 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
             cbk);
           }
 
-          const inputs = fromHex(tx.transaction).ins.map(({hash, index}) => {
-            const id = hash.slice().reverse().toString('hex');
-
+          const inputs = components.inputs.map(({id, vout}) => {
             const matching = getTx.transactions.find(n => n.id === id);
 
+            const {outputs} = componentsOfTransaction({
+              transaction: matching.transaction,
+            });
+
             return {
-              tokens: fromHex(matching.transaction).outs[index].value,
+              tokens: outputs[vout].tokens,
               transaction_id: id,
-              transaction_vout: index,
+              transaction_vout: vout,
             };
           });
 
           const inputsValue = sumOf(inputs.map(n => n.tokens));
-          const outputsValue = fromHex(tx.transaction).outs.map(n => n.value);
+          const outputsValue = components.outputs.map(n => n.tokens);
 
           return cbk(null, {
             block_id: tx.block_id,
