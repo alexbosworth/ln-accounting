@@ -1,4 +1,5 @@
 const {deepEqual} = require('node:assert').strict;
+const {fail} = require('node:assert').strict;
 const {rejects} = require('node:assert').strict;
 const test = require('node:test');
 
@@ -29,6 +30,11 @@ const tests = [
     error: [400, 'UnsupportedCurrencyForCoingeckoFiatRateLookup'],
   },
   {
+    args: makeArgs({currency: 'ETH'}),
+    description: 'Only BTC is supported as a currency',
+    error: [400, 'UnsupportedCurrencyForCoingeckoFiatRateLookup'],
+  },
+  {
     args: makeArgs({date: undefined}),
     description: 'A date is required',
     error: [400, 'ExpectedDateForCoingeckoRateLookup'],
@@ -36,6 +42,11 @@ const tests = [
   {
     args: makeArgs({fiat: undefined}),
     description: 'A fiat type is required',
+    error: [400, 'UnsupportedFiatTypeForCoingeckoFiatRateLookup'],
+  },
+  {
+    args: makeArgs({fiat: 'EUR'}),
+    description: 'Only USD is supported as a fiat type',
     error: [400, 'UnsupportedFiatTypeForCoingeckoFiatRateLookup'],
   },
   {
@@ -59,6 +70,16 @@ const tests = [
     error: [503, 'UnexpectedResponseInCoingeckoPastRateResponse'],
   },
   {
+    args: makeArgs({request: ({}, cbk) => cbk(null, null, {})}),
+    description: 'Market data is expected in response',
+    error: [503, 'UnexpectedResponseInCoingeckoPastRateResponse'],
+  },
+  {
+    args: makeArgs({request: ({}, cbk) => cbk(null, null, {market_data: {}})}),
+    description: 'A current price is expected in market data',
+    error: [503, 'UnexpectedResponseInCoingeckoPastRateResponse'],
+  },
+  {
     args: makeArgs({
       request: ({}, cbk) => cbk(null, null, {
         market_data: {current_price: {}},
@@ -70,6 +91,48 @@ const tests = [
   {
     args: makeArgs({}),
     description: 'Get coingecko historic rate',
+    expected: {cents: 1234},
+  },
+  {
+    args: makeArgs({
+      date: '2020-01-02T03:04:05.000Z',
+      rates: {'2020-01-02T12:00:00.000Z': 5678},
+      request: ({}, cbk) => fail('Expected cached rate to be used'),
+    }),
+    description: 'A known rate for the same day is used instead of a request',
+    expected: {cents: 5678},
+  },
+  {
+    args: makeArgs({
+      date: '2020-01-02T03:04:05.000Z',
+      rates: {'2020-01-01T03:04:05.000Z': 5678},
+    }),
+    description: 'A known rate for a different day is not used',
+    expected: {cents: 1234},
+  },
+  {
+    args: makeArgs({
+      date: '2020-01-02T03:04:05.000Z',
+      rates: {'2020-01-02T03:04:05.000Z': 0},
+    }),
+    description: 'A falsy known rate falls back to a request',
+    expected: {cents: 1234},
+  },
+  {
+    args: makeArgs({
+      date: '2020-01-02T03:04:05.000Z',
+      request: (args, cbk) => {
+        deepEqual(args, {
+          json: true,
+          qs: {date: '02-01-2020', localization: false},
+          timeout: 30000,
+          url: 'https://api.coingecko.com/api/v3/coins/bitcoin/history',
+        });
+
+        return api(args, cbk);
+      },
+    }),
+    description: 'Request is made with the expected arguments',
     expected: {cents: 1234},
   },
 ];

@@ -4,19 +4,19 @@
   },
   "author": {
     "name": "Alex Bosworth",
-    "url": "https://twitter.com/alexbosworth"
+    "url": "https://x.com/alexbosworth"
   },
   "bugs": {
     "url": "https://github.com/alexbosworth/ln-accounting/issues"
   },
   "dependencies": {
-    "@alexbosworth/blockchain": "4.8.0",
-    "@alexbosworth/formulas": "1.4.0",
+    "@alexbosworth/blockchain": "4.10.0",
+    "@alexbosworth/formulas": "1.5.0",
     "@json2csv/plainjs": "7.0.8",
     "async": "3.2.6",
     "asyncjs-util": "1.2.12",
-    "goldengate": "16.0.7",
-    "ln-service": "59.5.0"
+    "goldengate": "16.0.8",
+    "ln-service": "60.1.2"
   },
   "description": "lnd accounting reports",
   "engines": {
@@ -36,5 +36,5 @@
   "scripts": {
     "test": "node --experimental-test-coverage --test"
   },
-  "version": "10.0.7"
+  "version": "10.0.8"
 }
