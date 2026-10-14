@@ -59,7 +59,31 @@ const tests = [
     args: {},
     description: 'Expects array of invoices',
     error: 'ExpectedArrayOfInvoicesToMapToAccountingRecords',
-  }
+  },
+  {
+    args: {
+      invoices: [{
+        confirmed_at: date,
+        created_at: date,
+        description: 'a,b',
+        id: 'id',
+        is_confirmed: true,
+        payments: [{messages: [{type: '34349339', value: 'alice'}]}],
+        received: 1,
+      }],
+    },
+    description: 'Marked from sender is represented',
+    expected: {
+      records: [{
+        amount: 1,
+        category: 'invoices',
+        created_at: date,
+        id: 'id',
+        notes: 'Marked from alice a b',
+        type: 'income',
+      }],
+    },
+  },
 ];
 
 tests.forEach(({args, description, error, expected}) => {

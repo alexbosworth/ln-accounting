@@ -40,6 +40,16 @@ const tests = [
     description: 'A long precision BTC value that rounds down is parsed',
     expected: {tokens: 120969465},
   },
+  {
+    args: {amount: ['1', '2']},
+    description: 'Multiple amounts are rejected',
+    error: 'CannotParseMultipleAmounts',
+  },
+  {
+    args: {amount: '2*FOO', variables: {FOO: 21}},
+    description: 'Variables are substituted case-insensitively',
+    expected: {tokens: 42},
+  },
 ];
 
 tests.forEach(({args, description, error, expected}) => {

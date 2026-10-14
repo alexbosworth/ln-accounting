@@ -1,6 +1,8 @@
 {
   "allowScripts": {
-    "protobufjs@7.6.6": true
+    "protobufjs@7.6.6": true,
+    "cpu-features@0.0.10": true,
+    "ssh2@1.17.0": true
   },
   "author": {
     "name": "Alex Bosworth",
@@ -10,18 +12,30 @@
     "url": "https://github.com/alexbosworth/ln-accounting/issues"
   },
   "dependencies": {
-    "@alexbosworth/blockchain": "4.10.0",
+    "@alexbosworth/blockchain": "4.11.0",
     "@alexbosworth/formulas": "1.5.0",
     "@json2csv/plainjs": "7.0.8",
     "async": "3.2.6",
     "asyncjs-util": "1.2.12",
-    "goldengate": "16.0.8",
-    "ln-service": "60.1.2"
+    "goldengate": "16.0.9",
+    "ln-service": "60.1.6"
   },
   "description": "lnd accounting reports",
+  "devDependencies": {
+    "ln-docker-daemons": "8.1.2"
+  },
   "engines": {
     "node": ">=22"
   },
+  "files": [
+    "CHANGELOG.md",
+    "esplora",
+    "fiat",
+    "harmony",
+    "index.js",
+    "records",
+    "report"
+  ],
   "keywords": [
     "accounting",
     "lightning-network",
@@ -34,7 +48,8 @@
     "url": "git+https://github.com/alexbosworth/ln-accounting.git"
   },
   "scripts": {
-    "test": "node --experimental-test-coverage --test"
+    "integration-tests": "node --test 'test/integration/*.js'",
+    "test": "node --experimental-test-coverage --test-coverage-exclude='test/**' --test-coverage-branches=100 --test-coverage-functions=100 --test-coverage-lines=100 --test 'test/!(integration)/**/*.js'"
   },
-  "version": "10.0.8"
+  "version": "10.0.9"
 }

@@ -57,6 +57,18 @@ const tests = [
     description: 'Get historic fiat rates when the rate is already got',
     expected: {rates: [{date, cents: 123456}, {date, cents: 123456}]},
   },
+  {
+    args: {
+      currency: 'BTC',
+      dates: [date],
+      fiat: 'USD',
+      request: ({}, cbk) => {
+        return cbk(null, null, {market_data: {current_price: {usd: 12.34}}});
+      },
+    },
+    description: 'Get historic fiat rates using the default rate provider',
+    expected: {rates: [{date, cents: 1234}]},
+  },
 ];
 
 tests.forEach(({args, description, error, expected}) => {

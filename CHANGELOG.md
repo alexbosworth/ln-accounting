@@ -1,6 +1,9 @@
 # Versions
 
-## Version 10.0.8
+## Version 10.0.9
+
+- `getAccountingReport`: Fix channel funding and close transactions being
+    reported as chain sends and receives
 
 ### Breaking Changes
 

@@ -301,7 +301,10 @@ module.exports = (args, cbk) => {
         const closeIds = channels.map(n => n.close_transaction_id);
         const transactionIds = channels.map(n => n.transaction_id);
 
-        const ids = [].concat(closeIds).concat(transactionIds).map(n => !!n);
+        const ids = []
+          .concat(closeIds)
+          .concat(transactionIds)
+          .filter(n => !!n);
 
         return cbk(null, ids);
       }],

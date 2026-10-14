@@ -2,21 +2,24 @@ const {deepEqual} = require('node:assert').strict;
 const {rejects} = require('node:assert').strict;
 const test = require('node:test');
 
-const method = require('./../../blockstream/get_blockstream_tx');
+const method = require('./../../esplora/get_esplora_tx');
+
+const address = 'bc1zw508d6qejxtdg4y5r3zarvaryvg6kdaj';
+const hash = Buffer.alloc(32).toString('hex');
 
 const makeArgs = overrides => {
   const args = {
+    api: 'https://blockstream.info/api/',
     id: Buffer.alloc(32).toString('hex'),
-    network: 'btc',
     request: ({}, cbk) => cbk(null, null, {
       fee: 1,
       status: {
-        block_hash: Buffer.alloc(32).toString('hex'),
+        block_hash: hash,
         block_height: 1,
         block_time: 1,
         confirmed: true,
       },
-      vout: [{scriptpubkey_address: 'bc1zw508d6qejxtdg4y5r3zarvaryvg6kdaj'}],
+      vout: [{scriptpubkey_address: address}],
     }),
   };
 
@@ -27,71 +30,67 @@ const makeArgs = overrides => {
 
 const tests = [
   {
-    args: makeArgs({id: undefined}),
-    description: 'An id is required',
-    error: [400, 'ExpectedTransactionIdToGetBlockstreamTxFee'],
+    args: makeArgs({api: undefined}),
+    description: 'An api is required',
+    error: [400, 'ExpectedBaseEsploraApiToGetEsploraTx'],
   },
   {
-    args: makeArgs({network: 'network'}),
-    description: 'A known network is required',
-    error: [400, 'UnsupportedNetworkToGetBlockstreamTxFee'],
+    args: makeArgs({id: undefined}),
+    description: 'An id is required',
+    error: [400, 'ExpectedTransactionIdToGetEsploraTx'],
   },
   {
     args: makeArgs({request: undefined}),
     description: 'A request method is required',
-    error: [400, 'ExpectedRequestFunctionToGetBlockstreamTxFee'],
+    error: [400, 'ExpectedRequestFunctionToGetEsploraTx'],
   },
   {
     args: makeArgs({request: ({}, cbk) => cbk('err')}),
     description: 'Request errors are passed back',
-    error: [503, 'UnexpectedErrorGettingBlockstreamTxFee', {err: 'err'}],
+    error: [503, 'UnexpectedErrorGettingEsploraTx', {err: 'err'}],
   },
   {
     args: makeArgs({request: ({}, cbk) => cbk()}),
     description: 'A response body is expected',
-    error: [503, 'ExpectedTxLookupResultForBlockstreamTxFee'],
+    error: [503, 'ExpectedTxLookupResultForEsploraTx'],
   },
   {
     args: makeArgs({request: ({}, cbk) => cbk(null, null, {})}),
     description: 'A transaction fee is required',
-    error: [503, 'ExpectedTransactionFeeInResultFromBlockstream'],
+    error: [503, 'ExpectedTransactionFeeInResultFromEsplora'],
   },
   {
     args: makeArgs({request: ({}, cbk) => cbk(null, null, {fee: 1})}),
     description: 'Transaction status is required',
-    error: [503, 'ExpectedStatusOfBlockstreamTransaction'],
+    error: [503, 'ExpectedStatusOfEsploraTransaction'],
   },
   {
     args: makeArgs({
       request: ({}, cbk) => cbk(null, null, {fee: 1, status: {}}),
     }),
     description: 'A vout array is required',
-    error: [503, 'ExpectedOutputsInBlockstreamTransaction'],
+    error: [503, 'ExpectedOutputsInEsploraTransaction'],
   },
   {
     args: makeArgs({
-      network: 'btctestnet',
       request: ({}, cbk) => cbk(null, null, {
         fee: 1,
         status: {},
-        vout: [{scriptpubkey_address: 'bc1zw508d6qejxtdg4y5r3zarvaryvg6kdaj'}],
+        vout: [{scriptpubkey_address: address}],
       }),
     }),
     description: 'An unconfirmed tx is returned',
-    expected: {
-      fee: 1,
-      output_addresses: ['bc1zw508d6qejxtdg4y5r3zarvaryvg6kdaj'],
-    },
+    expected: {fee: 1, output_addresses: [address]},
   },
   {
     args: makeArgs({}),
-    description: 'Blockstream tx info is returned',
+    description: 'Esplora tx info is returned',
     expected: {
+      block_id: hash,
       confirmation_height: 1,
       created_at: '1970-01-01T00:00:01.000Z',
-      block_id: Buffer.alloc(32).toString('hex'),
       fee: 1,
-      output_addresses: ['bc1zw508d6qejxtdg4y5r3zarvaryvg6kdaj']
+      output_addresses: [address],
     },
   },
 ];

@@ -75,3 +75,27 @@ tests.forEach(({args, description, error, expected}) => {
     return;
   });
 });
+
+test('Failed rate lookups are retried', async ({mock}) => {
+  // Eliminate the random retry delay
+  mock.method(Math, 'random', () => 0);
+
+  let attempts = 0;
+
+  const {cents} = await getHistoricRate(makeArgs({
+    request: ({qs}, cbk) => {
+      attempts++;
+
+      if (attempts === 1) {
+        return cbk('err');
+      }
+
+      return api({qs}, cbk);
+    },
+  }));
+
+  equal(attempts, 2, 'Rate lookup was retried');
+  equal(cents, 1234, 'Rate returned after retry');
+
+  return;
+});
