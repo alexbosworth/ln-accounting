@@ -12,6 +12,7 @@ const {isArray} = Array;
       [asset]: <Asset Type String>
       [created_at]: <ISO 8601 Date String>
       [external_id]: <External Reference Id String>
+      [fiat_amount]: <Fiat Amount Number>
       [from_id]: <Source Id String>
       [id]: <Record Id String>
       [notes]: <Notes String>

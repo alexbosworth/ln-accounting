@@ -11,10 +11,14 @@ format
 
 Get an accounting summary of wallet
 
-Note: Chain fees does not include chain fees paid to close channels
+Note: The `lightning_fees` category is a view of the routing fees paid on
+payments, it is only populated when it is specified as the category filter
+
+Note: `request` is required to look up fiat rates when `fiat` is specified and
+no `rate` function is given
 
     {
-      [after]: <Records Created After ISO 8601 Date>
+      [after]: <Records Created On or After ISO 8601 Date>
       [before]: <Records Created Before ISO 8601 Date>
       [category]: <Category Filter String>
       currency: <Base Currency Type String>
@@ -23,7 +27,8 @@ Note: Chain fees does not include chain fees paid to close channels
       [network]: <Network Name String>
       [rate]: <Exchange Function> ({currency, date, fiat}, cbk) => (err, {cents})
       [rate_provider]: <Fiat Rate Provider String> coindesk || coingecko
-      request: <Request Function>
+      [request]: <Request Function>
+      [transactions]: [<Raw Transaction Hex String>]
     }
 
     @returns via cbk or Promise
@@ -76,6 +81,18 @@ Note: Chain fees does not include chain fees paid to close channels
         [type]: <Record Type String>
       }]
       [invoices_csv]: <CSV String>
+      [lightning_fees]: [{
+        [amount]: <Amount Number>
+        [asset]: <Asset Type String>
+        [created_at]: <ISO 8601 Date String>
+        [external_id]: <External Reference Id String>
+        [from_id]: <Source Id String>
+        [id]: <Record Id String>
+        [notes]: <Notes String>
+        [to_id]: <Destination Id String>
+        [type]: <Record Type String>
+      }]
+      [lightning_fees_csv]: <CSV String>
       [payments]: [{
         [amount]: <Amount Number>
         [asset]: <Asset Type String>
@@ -95,16 +112,17 @@ Note: Chain fees does not include chain fees paid to close channels
 Get chain transactions, including sweep fees
 
     {
-      [after]: <Records Created After ISO 8601 Date>
+      [after]: <Records Created On or After ISO 8601 Date>
       [before]: <Records Created Before ISO 8601 Date>
       lnd: <Authenticated LND Object>
-      request: <Request Function>
+      [network]: <Network Name String>
+      [transactions]: [<Raw Transaction Hex String>]
     }
 
     @returns via cbk or Promise
     {
       transactions: [{
-        [block_id]: <Block Hash String>
+        [block_id]: <Block Id Hex String>
         [confirmation_count]: <Confirmation Count Number>
         [confirmation_height]: <Confirmation Block Height Number>
         created_at: <Created ISO 8601 Date String>
@@ -117,6 +135,33 @@ Get chain transactions, including sweep fees
         tokens: <Tokens Including Fee Number>
         [transaction]: <Raw Transaction Hex String>
       }]
+    }
+
+## harmonize
+
+Convert accounting records into a Harmony format CSV
+
+    {
+      records: [{
+        [amount]: <Amount Number>
+        [asset]: <Asset Type String>
+        [created_at]: <ISO 8601 Date String>
+        [external_id]: <External Reference Id String>
+        [fiat_amount]: <Fiat Amount Number>
+        [from_id]: <Source Id String>
+        [id]: <Record Id String>
+        [notes]: <Notes String>
+        [to_id]: <Destination Id String>
+        [type]: <Record Type String>
+      }]
+    }
+
+    @throws
+    <Error>
+
+    @returns
+    {
+      csv: <Harmony Format CSV String>
     }
 
 ## parseAmount

@@ -1,32 +1,35 @@
 const asyncAuto = require('async/auto');
+const asyncify = require('async/asyncify');
 const asyncMapSeries = require('async/mapSeries');
-const asyncRetry = require('async/retry');
 const {componentsOfTransaction} = require('@alexbosworth/blockchain');
+const {getChainTransaction} = require('ln-service');
 const {getChainTransactions} = require('ln-service');
 const {getClosedChannels} = require('ln-service');
 const {getHeight} = require('ln-service');
 const {getSweepTransactions} = require('ln-service');
+const {idForTransaction} = require('@alexbosworth/blockchain');
 const {returnResult} = require('asyncjs-util');
 
-const {getProxyTx} = require('./../esplora');
-const {getProxyVout} = require('./../esplora');
+const channelCloseRecord = require('./channel_close_record');
+const closedChannelOutputs = require('./closed_channel_outputs');
+const getExternalOutput = require('./get_external_output');
+const getExternalTransaction = require('./get_external_transaction');
 
 const dateAsMs = date => new Date(date).getTime();
-const interval = 200;
 const {isArray} = Array;
 const msAsBlocks = ms => Math.ceil(ms / 1000 / 60 / 2.5);
 const {now} = Date;
+const outpointOf = n => `${n.transaction_id}:${n.transaction_vout}`;
 const sumOf = arr => arr.reduce((sum, n) => sum + n, Number());
-const times = 15;
 
 /** Get chain transactions, including sweep fees
 
   {
-    [after]: <Records Created After ISO 8601 Date>
+    [after]: <Records Created On or After ISO 8601 Date>
     [before]: <Records Created Before ISO 8601 Date>
     lnd: <Authenticated LND API Object>
     [network]: <Network Name String>
-    request: <Request Function>
+    [transactions]: [<Raw Transaction Hex String>]
   }
 
   @returns via cbk or Promise
@@ -47,7 +50,7 @@ const times = 15;
     }]
   }
 */
-module.exports = ({after, before, lnd, network, request}, cbk) => {
+module.exports = ({after, before, lnd, network, transactions}, cbk) => {
   return new Promise((resolve, reject) => {
     return asyncAuto({
       // Check arguments
@@ -56,12 +59,23 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
           return cbk([400, 'ExpectedLndToGetChainTransactions']);
         }
 
-        if (!request) {
-          return cbk([400, 'ExpectedRequestFunctionToGetChainTransactions']);
+        if (!!transactions && !isArray(transactions)) {
+          return cbk([400, 'ExpectedArrayOfRawTransactionsToGetChainTxs']);
         }
 
         return cbk();
       },
+
+      // Raw transactions supplied by the caller, with their ids
+      known: ['validate', asyncify(() => {
+        try {
+          return (transactions || []).map(transaction => {
+            return {transaction, id: idForTransaction({transaction}).id};
+          });
+        } catch (err) {
+          throw [400, 'ExpectedValidRawTransactionsToGetChainTxs', {err}];
+        }
+      })],
 
       // Get the closed channels
       getClosed: ['validate', ({}, cbk) => getClosedChannels({lnd}, cbk)],
@@ -105,8 +119,21 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
         return cbk(null, transactions);
       }],
 
+      // Outputs of closed channels that have values known from channel data
+      closeOutputs: ['getClosed', ({getClosed}, cbk) => {
+        const {channels} = getClosed;
+
+        return cbk(null, closedChannelOutputs({channels}).outputs);
+      }],
+
       // Fill in any missing fees for sweep transactions
-      getSweepFees: ['sweepTransactions', ({sweepTransactions}, cbk) => {
+      getSweepFees: [
+        'closeOutputs',
+        'getClosed',
+        'known',
+        'sweepTransactions',
+        ({closeOutputs, getClosed, known, sweepTransactions}, cbk) =>
+      {
         return asyncMapSeries(sweepTransactions, (tx, cbk) => {
           return asyncMapSeries(tx.spends, (spend, cbk) => {
             // Exit early when tokens are already known
@@ -114,26 +141,42 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
               return cbk(null, spend);
             }
 
-            return asyncRetry({interval, times}, cbk => {
-              return getProxyVout({
-                network,
-                request,
-                id: spend.transaction_id,
-                vout: spend.transaction_vout,
-              },
-              (err, res) => {
-                if (!!err) {
-                  return cbk(err);
-                }
+            const outpoint = outpointOf(spend);
 
-                return cbk(null, {
-                  tokens: res.tokens,
-                  transaction_id: spend.transaction_id,
-                  transaction_vout: spend.transaction_vout,
-                });
+            const output = closeOutputs.find(n => outpointOf(n) === outpoint);
+
+            // Exit early when the spent output is a known channel output
+            if (!!output) {
+              return cbk(null, {
+                tokens: output.tokens,
+                transaction_id: spend.transaction_id,
+                transaction_vout: spend.transaction_vout,
               });
+            }
+
+            // A spent close output has a known height from its channel
+            const channel = getClosed.channels.find(n => {
+              return n.close_transaction_id === spend.transaction_id;
+            });
+
+            return getExternalOutput({
+              known,
+              lnd,
+              height: !channel ? undefined : channel.close_confirm_height,
+              id: spend.transaction_id,
+              vout: spend.transaction_vout,
             },
-            cbk);
+            (err, res) => {
+              if (!!err) {
+                return cbk(err);
+              }
+
+              return cbk(null, {
+                tokens: res.tokens,
+                transaction_id: spend.transaction_id,
+                transaction_vout: spend.transaction_vout,
+              });
+            });
           },
           (err, spends) => {
             if (!!err) {
@@ -166,12 +209,11 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
         cbk);
       }],
 
-      // Calculate closing fees for channels that were locally initiated
-      getClosingFees: [
+      // Channels that were locally initiated and closed in the date range
+      closingChannels: [
         'getClosed',
         'getHeight',
-        'getTx',
-        ({getClosed, getHeight, getTx}, cbk) =>
+        ({getClosed, getHeight}, cbk) =>
       {
         const height = getHeight.current_block_height;
 
@@ -190,90 +232,61 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
             return channel.close_confirm_height > afterHeight;
           });
 
-        return asyncMapSeries(channels, (channel, cbk) => {
-          const tx = getTx.transactions.find(tx => {
-            return tx.id === channel.close_transaction_id;
-          });
+        return cbk(null, channels);
+      }],
 
-          const components = !tx ? null : componentsOfTransaction({
-            transaction: tx.transaction,
-          });
+      // Get the closing transactions of the closing channels
+      getCloseTxs: [
+        'closingChannels',
+        'getTx',
+        'known',
+        ({closingChannels, getTx, known}, cbk) =>
+      {
+        return asyncMapSeries(closingChannels, (channel, cbk) => {
+          const id = channel.close_transaction_id;
 
-          const hasMissingLocalData = (() => {
-            if (!components) {
-              return true;
-            }
+          const tx = getTx.transactions.find(n => n.id === id);
 
-            // Confirm that the inputs to the tx are local
-            return !!components.inputs.find(({id}) => {
-              return !getTx.transactions.find(n => n.id === id);
-            });
-          })();
-
-          // Exit early when the close transaction is missing
-          if (hasMissingLocalData) {
-            return asyncRetry({interval, times}, cbk => {
-              return getProxyTx({
-                network,
-                request,
-                id: channel.close_transaction_id,
-              },
-              (err, res) => {
-                if (!!err) {
-                  return cbk(err);
-                }
-
-                return cbk(null, {
-                  block_id: res.block_id,
-                  confirmation_height: res.confirmation_height,
-                  created_at: res.created_at,
-                  description: 'Channel close',
-                  fee: res.fee,
-                  id: res.id,
-                  is_confirmed: res.is_confirmed,
-                  is_outgoing: true,
-                  output_addresses: res.output_addresses,
-                  tokens: res.fee,
-                });
-              });
-            },
-            cbk);
+          // Exit early when the raw close transaction is in the wallet list
+          if (!!tx && !!tx.transaction) {
+            return cbk(null, {channel, transaction: tx});
           }
 
-          const inputs = components.inputs.map(({id, vout}) => {
-            const matching = getTx.transactions.find(n => n.id === id);
+          // The close tx may be in the wallet but outside of the height range
+          return getChainTransaction({id, lnd}, (err, res) => {
+            // Exit early when the wallet has the raw transaction
+            if (!err && !!res.transaction) {
+              return cbk(null, {channel, transaction: res});
+            }
 
-            const {outputs} = componentsOfTransaction({
-              transaction: matching.transaction,
+            // The close transaction is not in the wallet, so recover it
+            return getExternalTransaction({
+              id,
+              known,
+              lnd,
+              network,
+              height: channel.close_confirm_height,
+            },
+            (err, res) => {
+              if (!!err) {
+                return cbk(err);
+              }
+
+              return cbk(null, {channel, transaction: res});
             });
-
-            return {
-              tokens: outputs[vout].tokens,
-              transaction_id: id,
-              transaction_vout: vout,
-            };
-          });
-
-          const inputsValue = sumOf(inputs.map(n => n.tokens));
-          const outputsValue = components.outputs.map(n => n.tokens);
-
-          return cbk(null, {
-            block_id: tx.block_id,
-            confirmation_count: tx.confirmation_count,
-            confirmation_height: tx.confirmation_height,
-            created_at: tx.created_at,
-            description: `Channel close: ${tx.description}`,
-            fee: inputsValue - sumOf(outputsValue),
-            id: tx.id,
-            is_confirmed: tx.is_confirmed,
-            is_outgoing: true,
-            output_addresses: tx.output_addresses,
-            tokens: inputsValue - sumOf(outputsValue),
-            transaction: tx.transaction,
           });
         },
         cbk);
       }],
+
+      // Calculate closing fees for channels that were locally initiated
+      getClosingFees: ['getCloseTxs', asyncify(({getCloseTxs}) => {
+        try {
+          return getCloseTxs.map(channelCloseRecord);
+        } catch (err) {
+          throw [503, 'FailedToDeriveChannelCloseRecord', {err}];
+        }
+      })],
 
       // Consolidate transactions, including missing fees
       transactions: [
@@ -291,7 +304,7 @@ module.exports = ({after, before, lnd, network, request}, cbk) => {
         });
 
         const transactions = []
-          .concat(getClosingFees)
+          .concat(getClosingFees.map(n => n.record))
           .concat(getSweepFees)
           .concat(normalTx);
 

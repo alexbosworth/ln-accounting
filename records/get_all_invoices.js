@@ -9,7 +9,7 @@ const limit = 1000;
 /** Get all confirmed invoices
 
   {
-    [after]: <Invoices Confirmed After ISO 8601 Date String>
+    [after]: <Invoices Confirmed On or After ISO 8601 Date String>
     [before]: <Invoices Confirmed Before ISO 8601 Date String>
     lnd: <Authenticated LND API Object>
   }
@@ -93,11 +93,11 @@ module.exports = ({after, before, lnd}, cbk) => {
               res.invoices
                 .filter(n => !!n.confirmed_at && !!n.is_confirmed)
                 .filter(invoice => {
-                  if (!!after && invoice.confirmed_at <= after) {
+                  if (!!after && invoice.confirmed_at < after) {
                     return false;
                   }
 
-                  if (!!before && invoice.confirmed_at > before) {
+                  if (!!before && invoice.confirmed_at >= before) {
                     return false;
                   }
 

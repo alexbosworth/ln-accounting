@@ -57,7 +57,10 @@ module.exports = ({currency, dates, fiat, provider, rate, request}, cbk) => {
       getRates: ['validate', ({}, cbk) => {
         const rates = {};
 
-        return asyncMapSeries(dates, (date, cbk) => {
+        // Chain prices are derived in order, so dates are priced oldest first
+        const sorted = dates.slice().sort();
+
+        return asyncMapSeries(sorted, (date, cbk) => {
           const roughDate = date.substring(Number(), dateFormat.length);
 
           // Exit early when the fiat value has already been found
@@ -65,7 +68,7 @@ module.exports = ({currency, dates, fiat, provider, rate, request}, cbk) => {
             return cbk(null, {date, cents: rates[roughDate]});
           }
 
-          const times = !rate ? defaultRetryCount : Number()
+          const times = !rate ? defaultRetryCount : Number();
 
           return asyncRetry({interval, times}, cbk => {
             return (rate || getHistoricRate)({
@@ -88,15 +91,18 @@ module.exports = ({currency, dates, fiat, provider, rate, request}, cbk) => {
           },
           cbk);
         },
-        (err, rates) => {
-          if (!!err) {
-            return cbk(err);
-          }
+        cbk);
+      }],
 
-          return cbk(null, {rates});
+      // Put the rates in the order of the dates
+      ordered: ['getRates', ({getRates}, cbk) => {
+        const cents = new Map(getRates.map(n => [n.date, n.cents]));
+
+        return cbk(null, {
+          rates: dates.map(date => ({date, cents: cents.get(date)})),
         });
       }],
     },
-    returnResult({reject, resolve, of: 'getRates'}, cbk));
+    returnResult({reject, resolve, of: 'ordered'}, cbk));
   });
 };

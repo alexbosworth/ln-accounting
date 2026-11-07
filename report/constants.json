@@ -1,0 +1,4 @@
+{
+  "chainCategories": ["chain_fees", "chain_receives", "chain_sends"],
+  "paymentCategories": ["lightning_fees", "payments"]
+}

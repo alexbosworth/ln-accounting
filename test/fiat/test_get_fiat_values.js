@@ -6,6 +6,13 @@ const {getFiatValues} = require('./../../fiat/');
 
 const date = new Date().toISOString();
 
+// A rate that is the count of the rates that have been looked up so far
+const countingRate = () => {
+  let lookups = 0;
+
+  return ({}, cbk) => cbk(null, {cents: ++lookups});
+};
+
 const tests = [
   {
     args: {},
@@ -56,6 +63,21 @@ const tests = [
     },
     description: 'Get historic fiat rates when the rate is already got',
     expected: {rates: [{date, cents: 123456}, {date, cents: 123456}]},
+  },
+  {
+    args: {
+      currency: 'BTC',
+      dates: ['2024-01-02T00:00:00.000Z', '2024-01-01T00:00:00.000Z'],
+      fiat: 'USD',
+      rate: countingRate(),
+    },
+    description: 'Dates are priced oldest first and returned in their order',
+    expected: {
+      rates: [
+        {cents: 2, date: '2024-01-02T00:00:00.000Z'},
+        {cents: 1, date: '2024-01-01T00:00:00.000Z'},
+      ],
+    },
   },
   {
     args: {

@@ -10,6 +10,7 @@ const {returnResult} = require('asyncjs-util');
 
 const {categories} = require('./../harmony');
 const {categorizeRecords} = require('./../harmony');
+const {chainCategories} = require('./constants');
 const {chainFeesAsRecords} = require('./../harmony');
 const {chainReceivesAsRecords} = require('./../harmony');
 const {chainSendsAsRecords} = require('./../harmony');
@@ -20,6 +21,7 @@ const {getChainTransactions} = require('./../records');
 const {getFiatValues} = require('./../fiat');
 const {harmonize} = require('./../harmony');
 const {invoicesAsRecords} = require('./../harmony');
+const {paymentCategories} = require('./constants');
 const {paymentsAsRecords} = require('./../harmony');
 const {recordsWithFiat} = require('./../harmony');
 const {types} = require('./../harmony');
@@ -31,10 +33,14 @@ const times = 10;
 
 /** Get an accounting summary of wallet
 
-  Note: Chain fees does not include chain fees paid to close channels
+  Note: The lightning_fees category is a view of the routing fees paid on
+  payments, it is only populated when it is specified as the category filter
+
+  Note: A request function is required to look up fiat rates when a fiat is
+  specified and no rate function is given
 
   {
-    [after]: <Records Created After ISO 8601 Date String>
+    [after]: <Records Created On or After ISO 8601 Date String>
     [before]: <Records Created Before ISO 8601 Date String>
     [category]: <Category Filter String>
     currency: <Base Currency Type String>
@@ -43,7 +49,8 @@ const times = 10;
     [network]: <Network Name String>
     [rate]: <Exchange Function> ({currency, date, fiat}, cbk) => (err, {cents})
     [rate_provider]: <Fiat Rate Provider String> // coindesk || coingecko
-    request: <Request Function>
+    [request]: <Request Function>
+    [transactions]: [<Raw Transaction Hex String>]
   }
 
   @returns via cbk or Promise
@@ -96,6 +103,18 @@ const times = 10;
       [type]: <Record Type String>
     }]
     [invoices_csv]: <CSV String>
+    [lightning_fees]: [{
+      [amount]: <Amount Number>
+      [asset]: <Asset Type String>
+      [created_at]: <ISO 8601 Date String>
+      [external_id]: <External Reference Id String>
+      [from_id]: <Source Id String>
+      [id]: <Record Id String>
+      [notes]: <Notes String>
+      [to_id]: <Destination Id String>
+      [type]: <Record Type String>
+    }]
+    [lightning_fees_csv]: <CSV String>
     [payments]: [{
       [amount]: <Amount Number>
       [asset]: <Asset Type String>
@@ -127,7 +146,8 @@ module.exports = (args, cbk) => {
           return cbk([400, 'ExpectedRateFunctionForAccountingReport']);
         }
 
-        if (!args.request) {
+        // A request function is needed to get fiat rates without a rate
+        if (!!args.fiat && !args.rate && !args.request) {
           return cbk([400, 'ExpectedRequestFunctionToGetAccountingReport']);
         }
 
@@ -136,8 +156,8 @@ module.exports = (args, cbk) => {
 
       // Get transactions on the blockchain
       getChainTx: ['validate', ({}, cbk) => {
-        // Exit early when accounting for forwards, no need for chain tx info
-        if (args.category === categories.forwards) {
+        // Exit early when chain transactions are not being reported
+        if (!!args.category && !chainCategories.includes(args.category)) {
           return cbk(null, {transactions: []});
         }
 
@@ -146,14 +166,14 @@ module.exports = (args, cbk) => {
           before: args.before,
           lnd: args.lnd,
           network: args.network,
-          request: args.request,
+          transactions: args.transactions,
         },
         cbk);
       }],
 
       // Get channels
       getChannels: ['validate', ({}, cbk) => {
-        if (args.category === categories.forwards) {
+        if (!!args.category && !chainCategories.includes(args.category)) {
           return cbk(null, {channels: []});
         }
 
@@ -162,7 +182,7 @@ module.exports = (args, cbk) => {
 
       // Get closed channels
       getClosedChans: ['validate', ({}, cbk) => {
-        if (args.category === categories.forwards) {
+        if (!!args.category && !chainCategories.includes(args.category)) {
           return cbk(null, {channels: []});
         }
 
@@ -201,7 +221,7 @@ module.exports = (args, cbk) => {
 
       // Get payments
       getPayments: ['validate', ({}, cbk) => {
-        if (!!args.category && args.category !== categories.payments) {
+        if (!!args.category && !paymentCategories.includes(args.category)) {
           return cbk();
         }
 
@@ -210,7 +230,7 @@ module.exports = (args, cbk) => {
 
       // Get pending channels
       getPending: ['validate', ({}, cbk) => {
-        if (args.category === categories.forwards) {
+        if (!!args.category && !chainCategories.includes(args.category)) {
           return cbk(null, {pending_channels: []});
         }
 
@@ -270,7 +290,24 @@ module.exports = (args, cbk) => {
           public_key: getPublicKey.public_key,
         });
 
-        return cbk(null, records);
+        // Exit early when not limiting the report to lightning fees
+        if (args.category !== categories.lightning_fees) {
+          return cbk(null, records);
+        }
+
+        // Only the routing fee records are wanted, as lightning fees
+        const fees = records
+          .filter(record => record.type === types.network_fee)
+          .map(record => ({
+            amount: record.amount,
+            category: categories.lightning_fees,
+            created_at: record.created_at,
+            id: record.id,
+            notes: record.notes,
+            type: record.type,
+          }));
+
+        return cbk(null, fees);
       }],
 
       // Chain fees
@@ -375,7 +412,7 @@ module.exports = (args, cbk) => {
             return false;
           }
 
-          if (!!args.before && record.created_at > args.before) {
+          if (!!args.before && record.created_at >= args.before) {
             return false;
           }
 

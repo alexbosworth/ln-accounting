@@ -3,6 +3,7 @@ const {equal} = require('node:assert').strict;
 const {rejects} = require('node:assert').strict;
 const test = require('node:test');
 
+const fiat = require('./../../fiat');
 const harmony = require('./../../harmony');
 const lnService = require('ln-service');
 const records = require('./../../records');
@@ -36,6 +37,8 @@ stub(harmony, [
   'paymentsAsRecords',
   'recordsWithFiat',
 ]);
+
+stub(fiat, ['getFiatValues']);
 
 const {getAccountingReport} = require('./../../report');
 
@@ -121,6 +124,7 @@ const emptySummary = {
   chain_sends: [],
   forwards: [],
   invoices: [],
+  lightning_fees: [],
   payments: [],
 };
 
@@ -139,6 +143,22 @@ const makeArgs = overrides => {
 };
 
 const thrower = () => { throw new Error('err'); };
+const transactions = ['transaction'];
+
+// A stub that errors on its first call and succeeds after that
+const failsOnce = res => {
+  let isFailed = false;
+
+  return ({}, cbk) => {
+    if (!!isFailed) {
+      return cbk(null, res);
+    }
+
+    isFailed = true;
+
+    return cbk('err');
+  };
+};
 const unexpected = name => () => { throw new Error(`Unexpected${name}`); };
 
 const tests = [
@@ -158,12 +178,12 @@ const tests = [
     error: [400, 'ExpectedRateFunctionForAccountingReport'],
   },
   {
-    args: makeArgs({request: undefined}),
-    description: 'A request function is required',
+    args: makeArgs({fiat: 'USD', request: undefined}),
+    description: 'A request function is required to look up fiat rates',
     error: [400, 'ExpectedRequestFunctionToGetAccountingReport'],
   },
   {
-    args: makeArgs({}),
+    args: makeArgs({transactions}),
     description: 'A full report is generated within the date range',
     expected: {
       chain_fees: ['b:fee', 'send:fee'],
@@ -171,6 +191,7 @@ const tests = [
       chain_sends: ['send'],
       forwards: [date],
       invoices: ['inv'],
+      lightning_fees: [],
       payments: ['pay', 'pay:fee'],
     },
     stubs: {
@@ -194,6 +215,7 @@ const tests = [
       getChainTransactions: (args, cbk) => {
         equal(args.after, after, 'Chain transactions after date');
         equal(args.before, before, 'Chain transactions before date');
+        equal(args.transactions, transactions, 'Raw transactions are passed');
 
         // Channel funding and closing transactions are not receives or sends
         return cbk(null, {
@@ -216,7 +238,18 @@ const tests = [
       chain_sends: ['send'],
       forwards: [earlyDate, date, lateDate],
       invoices: ['inv'],
+      lightning_fees: [],
       payments: ['pay', 'pay:fee'],
+    },
+  },
+  {
+    args: makeArgs({category: 'forwards'}),
+    description: 'A record at after is in range and a record at before is not',
+    expected: Object.assign({}, emptySummary, {forwards: [after]}),
+    stubs: {
+      getForwards: ({}, cbk) => cbk(null, {
+        forwards: [forward(after), forward(before)],
+      }),
     },
   },
   {
@@ -233,32 +266,152 @@ const tests = [
     },
   },
   {
-    args: makeArgs({category: 'invoices'}),
-    description: 'An invoices report skips forwards and payments',
+    args: makeArgs({category: 'chain_fees'}),
+    description: 'A chain report skips the off-chain lookups',
     expected: Object.assign({}, emptySummary, {
       chain_fees: ['send:fee'],
       chain_receives: ['receive'],
       chain_sends: ['send'],
-      invoices: ['inv'],
     }),
     stubs: {
+      getAllInvoices: unexpected('InvoicesLookup'),
       getAllPayments: unexpected('PaymentsLookup'),
       getForwards: unexpected('ForwardsLookup'),
     },
   },
   {
+    args: makeArgs({category: 'invoices'}),
+    description: 'An invoices report skips the other lookups',
+    expected: Object.assign({}, emptySummary, {invoices: ['inv']}),
+    stubs: {
+      getAllPayments: unexpected('PaymentsLookup'),
+      getChainTransactions: unexpected('ChainLookup'),
+      getChannels: unexpected('ChannelsLookup'),
+      getClosedChannels: unexpected('ClosedLookup'),
+      getForwards: unexpected('ForwardsLookup'),
+      getPendingChannels: unexpected('PendingLookup'),
+    },
+  },
+  {
     args: makeArgs({category: 'payments'}),
-    description: 'A payments report skips forwards and invoices',
-    expected: Object.assign({}, emptySummary, {
+    description: 'A payments report skips the other lookups',
+    expected: Object.assign({}, emptySummary, {payments: ['pay', 'pay:fee']}),
+    stubs: {
+      getAllInvoices: unexpected('InvoicesLookup'),
+      getChainTransactions: unexpected('ChainLookup'),
+      getChannels: unexpected('ChannelsLookup'),
+      getClosedChannels: unexpected('ClosedLookup'),
+      getForwards: unexpected('ForwardsLookup'),
+      getPendingChannels: unexpected('PendingLookup'),
+    },
+  },
+  {
+    args: makeArgs({category: 'lightning_fees'}),
+    description: 'A lightning fees report only has payment routing fees',
+    expected: Object.assign({}, emptySummary, {lightning_fees: ['pay:fee']}),
+    records: {
+      lightning_fees: [{
+        amount: -1,
+        asset: 'BTC',
+        category: 'lightning_fees',
+        created_at: date,
+        external_id: '',
+        fiat_amount: undefined,
+        from_id: '',
+        id: 'pay:fee',
+        notes: 'Circular payment routing fee',
+        to_id: '',
+        type: 'fee:network',
+      }],
+      payments: [],
+    },
+    stubs: {
+      getAllInvoices: unexpected('InvoicesLookup'),
+      getChainTransactions: unexpected('ChainLookup'),
+      getChannels: unexpected('ChannelsLookup'),
+      getClosedChannels: unexpected('ClosedLookup'),
+      getForwards: unexpected('ForwardsLookup'),
+      getPendingChannels: unexpected('PendingLookup'),
+    },
+  },
+  {
+    args: makeArgs({
+      category: 'forwards',
+      fiat: 'USD',
+      rate: ({currency, date, fiat}, cbk) => {
+        equal(currency, 'BTC', 'Rate currency is passed');
+        equal(fiat, 'USD', 'Rate fiat is passed');
+
+        return cbk(null, {cents: 1e8 * 100});
+      },
+      request: undefined,
+    }),
+    description: 'Fiat values are added to records using a rate function',
+    expected: Object.assign({}, emptySummary, {forwards: [date]}),
+    records: {
+      forwards: [{
+        amount: 1,
+        asset: 'BTC',
+        category: 'forwards',
+        created_at: date,
+        external_id: '',
+        fiat_amount: 1,
+        from_id: '1x1x1',
+        id: '',
+        notes: '100',
+        to_id: '2x2x2',
+        type: 'income',
+      }],
+    },
+  },
+  {
+    args: makeArgs({category: 'forwards', fiat: 'USD'}),
+    description: 'Fiat values are looked up with the request function',
+    expected: Object.assign({}, emptySummary, {forwards: [date]}),
+    records: {
+      forwards: [{
+        amount: 1,
+        asset: 'BTC',
+        category: 'forwards',
+        created_at: date,
+        external_id: '',
+        fiat_amount: 1,
+        from_id: '1x1x1',
+        id: '',
+        notes: '100',
+        to_id: '2x2x2',
+        type: 'income',
+      }],
+    },
+    stubs: {
+      getFiatValues: ({dates, fiat, request}, cbk) => {
+        deepEqual(dates, [date], 'Record dates are passed to get rates');
+        equal(fiat, 'USD', 'Fiat is passed to get rates');
+        equal(typeof request, 'function', 'Request is passed to get rates');
+
+        return cbk(null, {rates: [{date, cents: 1e8 * 100}]});
+      },
+    },
+  },
+  {
+    args: makeArgs({category: 'forwards', request: undefined}),
+    description: 'A request function is not needed without fiat values',
+    expected: Object.assign({}, emptySummary, {forwards: [date]}),
+    stubs: {getFiatValues: unexpected('FiatLookup')},
+  },
+  {
+    args: makeArgs({}),
+    description: 'Getting pending channels is retried',
+    expected: {
       chain_fees: ['send:fee'],
       chain_receives: ['receive'],
       chain_sends: ['send'],
+      forwards: [date],
+      invoices: ['inv'],
+      lightning_fees: [],
       payments: ['pay', 'pay:fee'],
-    }),
-    stubs: {
-      getAllInvoices: unexpected('InvoicesLookup'),
-      getForwards: unexpected('ForwardsLookup'),
     },
+    stubs: {getPendingChannels: failsOnce({pending_channels: []})},
   },
   {
     args: makeArgs({}),
@@ -311,8 +464,11 @@ const tests = [
   },
 ];
 
-tests.forEach(({args, description, error, expected}, i) => {
-  return test(description, async () => {
+tests.forEach(({args, description, error, expected, records}, i) => {
+  return test(description, async ({mock}) => {
+    // Eliminate the random retry delay
+    mock.method(Math, 'random', () => 0);
+
     Object.keys(stubs).forEach(k => delete stubs[k]);
 
     Object.assign(stubs, defaultStubs(), tests[i].stubs || {});
@@ -328,54 +484,12 @@ tests.forEach(({args, description, error, expected}, i) => {
       const report = await getAccountingReport(args);
 
       deepEqual(summarize(report), expected, 'Got expected report');
+
+      Object.keys(records || {}).forEach(category => {
+        deepEqual(report[category], records[category], `Got ${category}`);
+      });
     }
 
     return;
   });
-});
-
-test('Fiat values are added to records', async () => {
-  Object.keys(stubs).forEach(k => delete stubs[k]);
-
-  Object.assign(stubs, defaultStubs());
-
-  const report = await getAccountingReport(makeArgs({
-    category: 'forwards',
-    fiat: 'USD',
-    rate: ({currency, date, fiat}, cbk) => {
-      equal(currency, 'BTC', 'Rate currency is passed');
-      equal(fiat, 'USD', 'Rate fiat is passed');
-
-      return cbk(null, {cents: 1e8 * 100});
-    },
-  }));
-
-  const [record] = report.forwards;
-
-  equal(record.fiat_amount, 1, 'Fiat value is added to record');
-
-  return;
-});
-
-test('Getting pending channels is retried', async ({mock}) => {
-  // Eliminate the random retry delay
-  mock.method(Math, 'random', () => 0);
-
-  Object.keys(stubs).forEach(k => delete stubs[k]);
-
-  let attempts = 0;
-
-  Object.assign(stubs, defaultStubs(), {
-    getPendingChannels: ({}, cbk) => {
-      attempts++;
-
-      return attempts === 1 ? cbk('err') : cbk(null, {pending_channels: []});
-    },
-  });
-
-  await getAccountingReport(makeArgs({}));
-
-  equal(attempts, 2, 'Pending channels lookup was retried');
-
-  return;
 });

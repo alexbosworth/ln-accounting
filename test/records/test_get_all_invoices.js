@@ -90,12 +90,21 @@ const tests = [
   },
   ...[
     {
-      after: '1970-01-01T00:00:01.000Z',
+      after: '1970-01-01T00:00:01.001Z',
       description: 'Invoices settled before the after date are excluded',
+    },
+    {
+      after: '1970-01-01T00:00:01.000Z',
+      description: 'Invoices settled at the after date are included',
+      isIncluded: true,
     },
     {
       before: '1970-01-01T00:00:00.500Z',
       description: 'Invoices settled after the before date are excluded',
+    },
+    {
+      before: '1970-01-01T00:00:01.000Z',
+      description: 'Invoices settled at the before date are excluded',
     },
     {
       after: '1970-01-01T00:00:00.500Z',

@@ -1,5 +1,31 @@
 # Versions
 
+## Version 11.0.0
+
+- `getAccountingReport`: Add `lightning_fees` category to report only the
+    routing fees paid on payments
+- `getChainTransactions`: Find channel close and sweep fees from LND channel
+    data, without a block explorer
+- `getChainTransactions`: Recover close and sweep transactions missing from
+    the wallet from their blocks in LND
+- `getAccountingReport`, `getChainTransactions`: Add `transactions` option to
+    supply raw transactions that cannot be recovered through LND
+- `getAccountingReport`: `request` is only required when `fiat` is specified
+    without a `rate` function, to look up fiat rates
+- `getChainTransactions`: `request` is no longer required
+- `harmonize`: Add method to make a CSV of records, like the records of
+    reports from several nodes
+
+### Breaking Changes
+
+- External block explorer lookups are removed: chain data comes only from LND.
+    A close transaction or swept output that cannot be recovered through LND
+    is an error
+- `getAccountingReport`: A report filtered to an off-chain category no longer
+    looks up or includes chain records
+- `getAccountingReport`: `before` is exclusive for every record type, so
+    adjacent date ranges no longer report the same record
+
 ## Version 10.0.9
 
 - `getAccountingReport`: Fix channel funding and close transactions being
