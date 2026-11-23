@@ -1,4 +1,4 @@
-const {isSweep} = require('goldengate');
+const isSwapSweep = require('./is_swap_sweep');
 
 /** Derive notes from a chain transaction
 
@@ -17,7 +17,7 @@ module.exports = args => {
   const addresses = args.output_addresses.join(' ');
   const {transaction} = args;
 
-  const sweep = !args.transaction ? {} : isSweep({transaction});
+  const sweep = !args.transaction ? {} : isSwapSweep({transaction});
 
   if (!!sweep.is_success_sweep) {
     return {notes: `Submarine swap success, swept out to ${addresses}`};

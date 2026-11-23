@@ -93,13 +93,15 @@ module.exports = ({after, before, lnd, network, transactions}, cbk) => {
           return getChainTransactions({lnd}, cbk);
         }
 
+        const blocks = msAsBlocks(now() - dateAsMs(after));
         const height = getHeight.current_block_height;
 
-        return getChainTransactions({
-          lnd,
-          after: height - msAsBlocks(now() - dateAsMs(after)),
-        },
-        cbk);
+        // Exit early when the whole chain is more recent than the after date
+        if (blocks >= height) {
+          return getChainTransactions({lnd}, cbk);
+        }
+
+        return getChainTransactions({lnd, after: height - blocks}, cbk);
       }],
 
       // Time-relevant sweep transactions

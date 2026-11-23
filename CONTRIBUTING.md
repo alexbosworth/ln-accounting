@@ -1,0 +1,135 @@
+# Contribution Guidelines
+
+- Feel free to open issues or pull requests
+- They may not be addressed or merged
+- You can ignore coding styles if you want
+- Readability trumps almost everything else
+
+## Coding Style
+
+If you want to help with style, here are some rough guidelines on style ideas:
+
+### Formatting
+
+- Arguments to methods are snake_case
+- Regular variables are camelCase
+- Never make snake_case variables, even when destructuring: use `args.max_fee`
+- When a method takes `args`, use `args.lnd` rather than destructuring `args`
+- Returned attributes are snake_case
+- A line has at most 79 characters, 80 including the newline
+- If a top level scalar would go over 80 characters in a line, that's ok
+- Don't bother with () in functions when not needed: `const a = b => c`
+- If there are multiple things together, alphabetize them
+- Don't split up long strings over multiple lines
+- Lines should be terminated by explicit semicolons
+- Logic like ternary operators should not extend beyond a single line
+- Don't let any lines linger when they don't do anything
+- Use single '' quotes not double "" quotes, except when `` is required
+- Use American English spelling, like `canceled` and not `cancelled`
+- Avoid double specifying an attribute and value, `{type: type}` vs `{type}`
+- Always use {} with if, else, etc statements
+- Document the top of methods with what the arguments are and what is returned
+- Use helpers for hex conversion, like `bufferAsHex` and `hexAsBuffer`,
+    rather than calling `.toString('hex')` or `Buffer.from(hex, 'hex')` inline
+
+### White Space
+
+- Spaces not tabs, 2 spaces
+- Minimize function nesting, make new files if nesting is required
+- Top of file helpers outside of tests are one-liners, otherwise use a new file
+- Top of file constants are one-liners too, longer values go in constants.json
+- No extraneous whitespace
+- A single newline should appear at the end of a file
+- Tightly space objects, like `{attribute: value}` not `{ attribute : value }`
+- If conditions should avoid spanning multiple lines
+- Avoid directories with tons of files, group them into subdirectories that
+    each have an `index.js`
+- In Markdown lists, indent the continued lines of an item by 4 spaces
+
+### Control Flow
+
+- Async functions should support both cbk and Promise style
+- Use async.js methods for asynchronous control flow
+- Use async auto and returnResult for all non-event async functions
+- Try to exit early from functions when possible, and note this exit in comment
+- Prefer cbk over Promise style, aside from in tests or in Promise libs
+- Use `asyncAuto` for asynchronous control flow dependency management
+- Callbacks should generally be named cbk even when redefinining in inner scope
+- Avoid mixing non-async complex logic and async control flows in the same file
+- Minimize async nesting in returned attributes and in method arguments
+- Let callback results flow through async auto, and pick out what is needed
+    in a later task rather than intercepting a result in the task that gets it
+- Pass `cbk` directly to an async method rather than wrapping it, as in
+    `err => cbk(err)`, unless the error or the result has to change
+- Wrap only the call that can throw, and call back after the try rather than
+    in it, so that an error thrown later in the callback chain is not caught
+- Use `asyncify` and `asyncReflect` inline on the function they wrap, not as
+    top of file helpers, as in `parseFile: ['getFile', asyncify(() => {})]`
+- Return or throw in an `asyncify` task's try/catch rather than calling back
+- Methods should always document their arguments and their output
+
+### Variables
+
+- Generally use undefined rather than null when defining nil types
+- When a method has a lot of arguments, use `args.` rather than destructuring
+    them into a big const
+- Prefer variable assignments on new lines rather than on a single line
+- Reduce the usage of . property access, like isArray instead of Array.isArray
+- When there is a newline in an object, always put a comma at the end of a line
+- Short properties always go first in objects: `{short, longer: type}`
+- Alphabetize short properties and longer properties as separate groups
+- If a statement relies on a statement above it, it should have a newline above
+- Variables declared together in a block should not reference each other, a
+    helper can call a builtin directly, like `Number.isInteger`
+- Avoid including scalar values such as strings or numbers in the code itself
+- Prefer hex serialization over base64 or Buffers in arguments or output
+- Avoid any function arguments that are multiple data types
+- Short names like `n` are only for one-liners, longer closures name arguments
+- Name variables for what they hold, like `candidates`, not for their type
+- Avoid names that mean something else in other contexts: `close`, `open`,
+    `self`, `status`, `top`
+
+### JS Features
+
+- Limit usage of `let` and never use `var`, prefer `const`
+- Limit use of npm dependencies when possible, only use good dependencies
+- Target support of the oldest node.js LTS release still being supported
+- Don't add fallbacks for LND versions older than the supported range
+- Never use class or prototype
+- Do not import more methods from an import than you actually use
+- Try to avoid passing objects in arguments as much as possible
+- Prefer using function iteration like map and forEach over for and while
+- Prefer the `sortBy` method in `arrays` over writing sort comparator functions
+- Use arrow functions and not `function` functions whenever possible
+- Functions should only take and return a single object as argument, result
+- Use the || flags to select between truthy variable options
+- Use !! to explicitly coerce non Bool variables to Boolean
+
+### Errors
+
+- Never ignore an error case, always deal with it as soon as possible
+- In the case of errors, do include the error string in the code
+- Add simple validations to help target simple calling mistakes
+- When throwing or returning error messages, use PascalCase for the message
+- Use HTTP status codes as a guideline: 4** is a local issue, 5** is remote
+- Return async errors as arrays: `[typeNumber, errorMsgString, extraDetails]`
+- Try to be very specific with error messages and try to not repeat one
+- Callbacks should always be called as (err, result)
+- Try and catch should not be used unless an error is expected
+
+### Testing
+
+- Ideally there is a tap unit test that has 100% coverage, using mock-lnd
+- Also good is a ln-docker-daemons integration test for common scenarios
+- Integration tests have a single test per file
+- Design methods so that they can easily tested with self-contained unit tests
+- Avoid breaking existing tests, changes should also change relevant tests
+- Keep the loop that runs a file's tests minimal: what differs between tests
+    goes in the tests array, not in branches of the loop
+- Make test arguments and expected results with `makeArgs` and `makeExpected`
+    that start from defaults and take what differs in a test as overrides
+
+## Changelog
+
+- When a change is too small for a line of its own, bump the version in the
+    latest heading instead of adding a line

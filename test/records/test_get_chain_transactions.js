@@ -212,6 +212,19 @@ const tests = [
     },
   },
   {
+    args: {after: minutesAgo(1000), lnd: {}},
+    description: 'A chain younger than the after date is read from its start',
+    expected: {transactions: [normalTx]},
+    stubs: {
+      getChainTransactions: (args, cbk) => {
+        equal(args.after, undefined, 'No after height before the chain start');
+
+        return cbk(null, {transactions: [normalTx]});
+      },
+      getHeight: ({}, cbk) => cbk(null, {current_block_height: 100}),
+    },
+  },
+  {
     args: {
       after: minutesAgo(24.9),
       before: minutesAgo(1),

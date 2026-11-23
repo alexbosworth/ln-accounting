@@ -1,6 +1,6 @@
 # Versions
 
-## Version 11.0.0
+## Version 11.0.1
 
 - `getAccountingReport`: Add `lightning_fees` category to report only the
     routing fees paid on payments
